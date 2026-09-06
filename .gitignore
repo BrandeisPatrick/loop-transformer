@@ -1,2 +1,8 @@
+.env
+.venv/
 .venv-tf4/
+__pycache__/
+*.pyc
+*.log
+models/*.gguf
 third_party/
