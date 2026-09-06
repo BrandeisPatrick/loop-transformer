@@ -238,11 +238,32 @@ def main():
                 j = json.loads(line); done[j["id"]] = j
             except Exception:
                 pass
+        errored = [k for k, v in done.items() if v.get("error")]
+        for k in errored:
+            del done[k]          # retry on the next invocation instead of scoring it wrong forever
+        if errored:
+            print(f"retrying {len(errored)} item(s) that errored previously", file=sys.stderr)
     todo = [it for it in items if it["id"] not in done]
     print(f"{args.benchmark}: {len(items)} items, {len(done)} done, {len(todo)} to run -> {args.out}", file=sys.stderr)
 
     lock = threading.Lock()
     fout = open(args.out, "a")
+
+    def call_with_retry(fn, *a, **kw):
+        """Transient 5xx / connection drops otherwise get recorded as a wrong answer, which silently
+        understates a model. Retry a few times with backoff before giving up."""
+        last = None
+        for attempt in range(3):
+            try:
+                return fn(*a, **kw)
+            except Exception as e:
+                last = e
+                transient = isinstance(e, (requests.ConnectionError, requests.Timeout)) or \
+                    (isinstance(e, requests.HTTPError) and getattr(e.response, "status_code", 0) >= 500)
+                if not transient or attempt == 2:
+                    raise
+                time.sleep(2 * (attempt + 1))
+        raise last
 
     def work(it):
         try:
@@ -251,8 +272,9 @@ def main():
                     raise SystemExit("completion mode currently supports gsm8k only")
                 prompt = fewshot_prompt(it["question"], args.shots)
                 fn = ollama_raw if args.api == "ollama" else completion
-                res = fn(args.base_url, args.model, prompt, args.max_tokens, args.temperature, extra,
-                         args.timeout, stop=["Q:", "</s>", "<|im_end|>"])
+                res = call_with_retry(fn, args.base_url, args.model, prompt, args.max_tokens,
+                                      args.temperature, extra, args.timeout,
+                                      stop=["Q:", "</s>", "<|im_end|>"])
                 pred = extract_strict(res["text"])
                 if pred is None and args.flexible:
                     pred = extract_number(res["text"])
@@ -262,10 +284,12 @@ def main():
                 messages = ([{"role": "system", "content": args.system}] if args.system else []) + \
                            [{"role": "user", "content": q}]
                 if args.api == "ollama":
-                    res = ollama_chat(args.base_url, args.model, messages, args.max_tokens, args.temperature, extra,
-                                      args.timeout, None if args.think is None else args.think == "on")
+                    res = call_with_retry(ollama_chat, args.base_url, args.model, messages, args.max_tokens,
+                                          args.temperature, extra, args.timeout,
+                                          None if args.think is None else args.think == "on")
                 else:
-                    res = chat(args.base_url, args.model, messages, args.max_tokens, args.temperature, extra, args.timeout)
+                    res = call_with_retry(chat, args.base_url, args.model, messages, args.max_tokens,
+                                          args.temperature, extra, args.timeout)
                 pred, ok = grade(args.benchmark, res["text"], it["answer"])
             rec = {**it, "model": args.model, "extra": extra, "pred": pred, "correct": ok, **res}
         except Exception as e:

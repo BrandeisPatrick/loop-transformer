@@ -6,6 +6,12 @@
 set -u
 cd "$(dirname "$0")/.."
 echo "=== $(date '+%H:%M:%S') phase 2 start ==="
+# Re-run the phase-1 Ollama evals: everything already answered is skipped, so this only retries
+# items that hit a transient 500. Cheap, and it removes a silent penalty from the accuracy.
+NB="hf.co/bartowski/Nanbeige_Nanbeige4.2-3B-GGUF:Q4_K_M"
+.venv/bin/python eval/run_eval.py --api ollama --think off --base-url http://127.0.0.1:11434/v1 \
+  --model "$NB" --benchmark gsm8k --n 200 --max-tokens 1024 \
+  --out results/gsm8k_nanbeige4.2-3b_loops2_nothink.jsonl 2>&1 | grep -vE "Warning" | tail -3
 pkill -f "serve/shim.py" 2>/dev/null; sleep 3          # free the Ouro shim's ~3 GB
 curl -s -m 3 http://127.0.0.1:11434/api/ps >/dev/null && echo "(ollama up; models unload after keep_alive)"
 bash scripts/loopus_smoke.sh

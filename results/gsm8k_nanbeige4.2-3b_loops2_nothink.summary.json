@@ -1,0 +1,18 @@
+{
+  "benchmark": "gsm8k",
+  "model": "hf.co/bartowski/Nanbeige_Nanbeige4.2-3B-GGUF:Q4_K_M",
+  "extra": {},
+  "mode": "chat",
+  "api": "ollama",
+  "think": "off",
+  "shots": null,
+  "n": 200,
+  "accuracy": 0.91,
+  "errors": 1,
+  "truncated": 1,
+  "mean_completion_tokens": 313.7638190954774,
+  "mean_latency_s": 15.66860514998436,
+  "max_tokens": 1024,
+  "temperature": 0.0,
+  "seed": 0
+}
