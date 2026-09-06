@@ -14,12 +14,23 @@
     "file": "gsm8k_ouro-1.4b_3shot_T2.jsonl",
     "model": "ouro-1.4b",
     "loops": 2,
-    "n": 34,
-    "strict": 0.5588235294117647,
-    "strict_fixed": 0.6764705882352942,
-    "flexible": 0.6764705882352942,
-    "dollar_rate": 0.17647058823529413,
-    "as_run": 0.6764705882352942
+    "n": 100,
+    "strict": 0.52,
+    "strict_fixed": 0.64,
+    "flexible": 0.67,
+    "dollar_rate": 0.16,
+    "as_run": 0.64
+  },
+  {
+    "file": "gsm8k_ouro-1.4b_3shot_T3.jsonl",
+    "model": "ouro-1.4b",
+    "loops": 3,
+    "n": 2,
+    "strict": 0.5,
+    "strict_fixed": 0.5,
+    "flexible": 0.5,
+    "dollar_rate": 0.5,
+    "as_run": 0.5
   },
   {
     "file": "gsm8k_ouro-1.4b_3shot_T4.jsonl",

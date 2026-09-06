@@ -16,7 +16,10 @@ r=requests.post("http://127.0.0.1:11436/v1/completions", json={"model":"x","prom
 t=r["choices"][0]["text"]; print(f"[N={L}] strict={extract_strict(t)!r} | {r['usage'].get('looplm')} | {t.strip()[:160]!r}")
 PY
 done
-echo "== GSM8K n=$N at N=8 (q_threshold 0.9 default halting) and N=1 =="
-.venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11436/v1 --model loopus-qwen3-1.7b --benchmark gsm8k --mode completion --shots 3 --n $N --max-tokens 256 --extra-body '{"num_loops": 8}' --out results/gsm8k_loopus-qwen3-1.7b_3shot_N8.jsonl 2>&1 | grep -vE "Warning" | tail -3
-.venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11436/v1 --model loopus-qwen3-1.7b --benchmark gsm8k --mode completion --shots 3 --n $N --max-tokens 256 --extra-body '{"num_loops": 1}' --out results/gsm8k_loopus-qwen3-1.7b_3shot_N1.jsonl 2>&1 | grep -vE "Warning" | tail -3
+# exit_threshold=1.0 disables the confidence-head early exit (q_val > 1.0 is never true), so
+# every token runs the full N recursions. Without it the shipped q_threshold=0.9 would let
+# tokens halt early and the two arms would not be a controlled depth comparison.
+echo "== GSM8K n=$N at fixed depth N=8 vs N=1 (early exit disabled) =="
+.venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11436/v1 --model loopus-qwen3-1.7b --benchmark gsm8k --mode completion --shots 3 --n $N --max-tokens 256 --extra-body '{"num_loops": 8, "exit_threshold": 1.0}' --out results/gsm8k_loopus-qwen3-1.7b_3shot_N8.jsonl 2>&1 | grep -vE "Warning" | tail -3
+.venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11436/v1 --model loopus-qwen3-1.7b --benchmark gsm8k --mode completion --shots 3 --n $N --max-tokens 256 --extra-body '{"num_loops": 1, "exit_threshold": 1.0}' --out results/gsm8k_loopus-qwen3-1.7b_3shot_N1.jsonl 2>&1 | grep -vE "Warning" | tail -3
 pkill -f "port 11436"; echo "loopus shim stopped"
