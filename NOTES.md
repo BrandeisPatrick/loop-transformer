@@ -1315,3 +1315,28 @@ loop on this M4. That is the expected shape: each step re-runs all 24 layers, an
 across steps. Note this is not a fair speed comparison against the 2.9 s/item baseline, which is a Q8_0
 GGUF on Metal via llama.cpp while Ouro is bf16 transformers on MPS; the accuracy comparison is
 apples-to-apples but the latency comparison is not.
+
+## 11. Looping is not a substitute for post-training
+
+The Ollama-served comparisons add a caveat that matters for how every number above should be read.
+
+| model | looped | stage | GSM8K | s/item |
+|---|---|---|---|---|
+| Nanbeige4.2-3B (2 loops, Q4_K_M) | yes | instruct | **91.0** ± 2.0 | 15.7 |
+| Qwen3-1.7B (`qwen3:1.7b`, thinking off) | no | instruct | **82.5** ± 2.7 | 4.2 |
+| Ouro-1.4B (4 loops) | yes | **base** | **80.0** ± 2.8 | 38.6 |
+| Qwen3-1.7B-Base | no | **base** | **68.0** ± 3.3 | 2.9 |
+
+Read down the base rows and looping wins by 12 points, which is the paper's claim and it replicates.
+But read across stages and a plain, post-trained 1.7B instruct model (82.5) beats the looped 1.4B base
+model (80.0) while running roughly thirteen times faster per item. The two facts are compatible —
+Ouro-1.4B is a *base* model and its correct comparator is Qwen3-1.7B-Base — but together they say
+something the base-vs-base table alone does not: at this scale, instruction tuning buys more math
+accuracy than recurrent depth does, and far more cheaply.
+
+The honest framing is therefore that looping and post-training are complements, not alternatives. The
+paper's own Ouro-*Thinking* variants are the apples-to-apples answer to `qwen3:1.7b`, and they were not
+run here (their published protocol is AIME/OlympiadBench with an unreleased LLM-as-judge rubric, which
+is out of reach on this machine). Any claim of the form "a looped 1.4B beats a 1.7B" must carry the
+stage qualifier, or it is comparing a base model against an instruct model and quietly taking credit
+for the architecture.
