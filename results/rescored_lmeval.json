@@ -25,12 +25,12 @@
     "file": "gsm8k_ouro-1.4b_3shot_T3.jsonl",
     "model": "ouro-1.4b",
     "loops": 3,
-    "n": 2,
-    "strict": 0.5,
-    "strict_fixed": 0.5,
-    "flexible": 0.5,
-    "dollar_rate": 0.5,
-    "as_run": 0.5
+    "n": 100,
+    "strict": 0.59,
+    "strict_fixed": 0.72,
+    "flexible": 0.72,
+    "dollar_rate": 0.17,
+    "as_run": 0.72
   },
   {
     "file": "gsm8k_ouro-1.4b_3shot_T4.jsonl",

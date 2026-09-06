@@ -1281,3 +1281,37 @@ sweep here targets:
 
 Depth 5 and beyond is extrapolation past the trained maximum of 4, and degrades. There is no published
 GSM8K-vs-depth curve anywhere in the paper, which is why the sweep being run here is a new measurement.
+
+## 10. GSM8K versus depth: a curve the paper never published
+
+The Ouro paper tabulates GSM8K only at its trained depth of 4, and gives its per-step ablation on
+knowledge-style benchmarks instead (Table 10: MMLU, ARC, HellaSwag, Winogrande). So the GSM8K-vs-depth
+curve below is a new measurement. Same 200/100-problem subsets, same 3-shot protocol the paper
+specifies, greedy, `exit_threshold` left at 1.0 so every step actually executes.
+
+| recurrent steps | GSM8K (ours) | gain | MMLU (paper Table 10) | gain | s/item |
+|---|---|---|---|---|---|
+| 1 | 23.0 ± 4.2 | — | 41.21 | — | 11.1 |
+| 2 | 64.0 ± 4.8 | +41.0 | 60.43 | +19.22 | 19.3 |
+| 3 | 72.0 ± 4.5 | +8.0 | 66.71 | +6.28 | 28.2 |
+| 4 | 80.0 ± 2.8 | +8.0 | 67.45 | +0.74 | 38.6 |
+
+**Math consumes depth that knowledge does not.** Both curves rise steeply out of a single pass, but they
+end differently: the fourth loop is worth **+0.74 points on MMLU and +8.0 on GSM8K**, an eleven-fold
+difference. Expressed as a share of each benchmark's total gain across the sweep, the last loop delivers
+3% of MMLU's improvement and 14% of GSM8K's. MMLU has essentially saturated at the trained depth while
+GSM8K is still climbing when the model runs out of trained recurrence — which suggests the ceiling on
+this model's math is the depth it was trained to, not its parameter count. It also means a depth
+ablation run only on knowledge benchmarks will understate how much looping buys, which is exactly the
+ablation the paper published.
+
+**How much recurrence does a 1.4B need to beat a 1.7B?** Three loops. Against the Qwen3-1.7B-Base
+baseline measured here at 68.0%, Ouro loses at two loops (64.0), wins at three (72.0) and wins clearly
+at four (80.0). The looped model's advantage is not free capability — it is bought with compute, and
+below three loops the trade is not worth making.
+
+**Cost is exactly linear in depth**, at 11.1 / 19.3 / 28.2 / 38.6 s/item, about 9.2 s per additional
+loop on this M4. That is the expected shape: each step re-runs all 24 layers, and nothing is cached
+across steps. Note this is not a fair speed comparison against the 2.9 s/item baseline, which is a Q8_0
+GGUF on Metal via llama.cpp while Ouro is bf16 transformers on MPS; the accuracy comparison is
+apples-to-apples but the latency comparison is not.

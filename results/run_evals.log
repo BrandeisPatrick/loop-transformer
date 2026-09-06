@@ -20,3 +20,9 @@
   "seed": 0
 }
 ### 18:02:21 .venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11435/v1 --model ouro-1.4b --benchmark gsm8k --mode completion --shots 3 --n 100 --max-tokens 256 --extra-body {"num_loops": 3} --out results/gsm8k_ouro-1.4b_3shot_T3.jsonl
+  "max_tokens": 256,
+  "temperature": 0.0,
+  "seed": 0
+}
+### 18:49:27 Ouro runs done -> stopping shim to free memory
+### 18:49:29 .venv/bin/python eval/run_eval.py --api ollama --think off --base-url http://127.0.0.1:11434/v1 --model hf.co/bartowski/Nanbeige_Nanbeige4.2-3B-GGUF:Q4_K_M --benchmark gsm8k --n 200 --max-tokens 1024 --out results/gsm8k_nanbeige4.2-3b_loops2_nothink.jsonl

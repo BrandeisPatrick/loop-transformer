@@ -54,6 +54,12 @@ def score(path):
     rows = [json.loads(l) for l in open(path) if l.strip()]
     if not rows:
         return None
+    # These filters are the gsm8k_cot ones, which key on "The answer is N". Chat-mode runs prompt for
+    # \boxed{} instead, so applying them there yields a meaningless 0% rather than a comparison.
+    summ = path.replace(".jsonl", ".summary.json")
+    mode = json.load(open(summ)).get("mode") if os.path.exists(summ) else None
+    if mode == "chat" or (mode is None and "The answer is" not in (rows[0].get("text") or "")):
+        return None
     n = len(rows)
     strict = flex = fixed = dollar = 0
     for r in rows:
@@ -77,12 +83,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--glob", default=os.path.join(os.path.dirname(__file__), "..", "results", "gsm8k_*.jsonl"))
     a = ap.parse_args()
-    rows = [r for r in (score(p) for p in sorted(glob.glob(a.glob)) if "smoke" not in p) if r]
+    paths = [p for p in sorted(glob.glob(a.glob)) if "smoke" not in p]
+    rows = [r for r in (score(p) for p in paths) if r]
+    skipped = len(paths) - len(rows)
     w = max(len(r["file"]) for r in rows) if rows else 10
     print(f"{'run':{w}} {'n':>4} {'as-run':>8} {'strict':>8} {'strict+$':>9} {'flexible':>9} {'$-fmt':>7}")
     for r in rows:
         print(f"{r['file']:{w}} {r['n']:4d} {100*r['as_run']:7.1f}% {100*r['strict']:7.1f}% "
               f"{100*r['strict_fixed']:8.1f}% {100*r['flexible']:8.1f}% {100*r['dollar_rate']:6.1f}%")
+    if skipped:
+        print(f"\n({skipped} chat-mode run(s) skipped: they answer in \\boxed{{}}, not \"The answer is N\")")
     print("\nstrict   = lm-eval gsm8k_cot strict-match, verbatim\n"
           "strict+$ = same, with the currency prefix allowed into the capture (what lm-eval's own\n"
           "           regexes_to_ignore shows it meant to do)\nflexible = lm-eval flexible-extract")
