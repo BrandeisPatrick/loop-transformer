@@ -1231,3 +1231,53 @@ Two conclusions. First, the published 78.92 cannot have come from the verbatim s
 it closely, so the replication stands. Second, any looped-vs-baseline math comparison should report the
 extraction rule and preferably more than one, because here the choice of rule is worth more than the
 architecture. `eval/rescore.py` re-scores saved generations all four ways at zero compute cost.
+
+## 9. Evaluation protocol, verified against the primary source
+
+The single most load-bearing methodological question was the GSM8K shot count: if the paper used 8-shot
+and we used 3-shot, our 80.0 would not be comparable to its 78.92 at all. Every HTML rendering of the
+paper truncates Appendix C.1, so this was extracted from the PDF directly
+(`arxiv.org/pdf/2510.25741`, 54 pages, Table 16), verbatim:
+
+| Benchmark | Settings | Framework |
+|---|---|---|
+| MMLU | logprobs, 5-shot | lm-eval-harness |
+| MMLU-Pro | strict match, 5-shot CoT | lm-eval-harness |
+| BBH | strict match, 3-shot CoT | lm-eval-harness |
+| ARC-C | logprobs, 25-shot | lm-eval-harness |
+| HellaSwag | logprobs, 10-shot | lm-eval-harness |
+| Winogrande | logprobs, 5-shot | lm-eval-harness |
+| **GSM8K** | **strict match, 3-shot CoT** | **lm-eval-harness** |
+| MATH500 | strict match, 5-shot CoT | **In-house** |
+| HumanEval(+) / MBPP(+) | pass@1 | evalplus |
+
+Two things settled. **GSM8K is 3-shot**, so the protocol used here is correct and the comparison is
+sound. And **MATH500 alone used an in-house harness** — the body text's blanket claim that "all
+benchmarks are evaluated using lm-eval-harness and evalplus" is contradicted by the paper's own
+appendix table. A MATH-500 run here can therefore only *approach* the published 82.40, never match it
+exactly; it should be labelled a new measurement rather than a replication.
+
+Table 7 headline figures, also read from the PDF, for the two models measured here:
+
+| | GSM8K | MATH500 | MMLU |
+|---|---|---|---|
+| Ouro-1.4B (R4) | 78.92 | 82.40 | 67.35 |
+| Qwen3-1.7B(-Base) | 70.28 | 25.80 | 62.46 |
+
+Note the paper is internally inconsistent by 0.1 on MMLU at T=4: Table 7 says 67.35, the per-step
+ablation in Table 10 says 67.45 for the same model and setting. Not material, but any "matched the
+paper" claim is ambiguous at that precision by construction.
+
+Per-step ablation from Table 10, with the shot counts the paper actually used, which is what the MMLU
+sweep here targets:
+
+| UT step | ARC-C (25) | ARC-E (8) | CommonsenseQA (10) | HellaSwag (10) | MMLU (5) | Winogrande (5) |
+|---|---|---|---|---|---|---|
+| 1 | 37.63 | 63.85 | 44.64 | 55.24 | 41.21 | 56.99 |
+| 2 | 54.86 | 80.30 | 67.98 | 71.15 | 60.43 | 66.69 |
+| 3 | 59.47 | 83.33 | 74.37 | 74.07 | 66.71 | 71.35 |
+| 4 | 60.92 | 83.96 | 75.43 | 74.29 | 67.45 | 72.30 |
+| 5 | 58.96 | 82.91 | 75.35 | 73.72 | 66.64 | — |
+
+Depth 5 and beyond is extrapolation past the trained maximum of 4, and degrades. There is no published
+GSM8K-vs-depth curve anywhere in the paper, which is why the sweep being run here is a new measurement.
