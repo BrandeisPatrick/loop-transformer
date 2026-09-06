@@ -1,0 +1,7 @@
+### 09:26:07 .venv/bin/python eval/run_eval.py --api ollama --base-url http://127.0.0.1:11434/v1 --model hf.co/mradermacher/Qwen3-1.7B-Base-GGUF:Q8_0 --benchmark gsm8k --mode completion --shots 3 --n 200 --max-tokens 256 --out results/gsm8k_qwen3-1.7b-base_3shot.jsonl
+  "max_tokens": 256,
+  "temperature": 0.0,
+  "seed": 0
+}
+### 09:35:52 .venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11435/v1 --model ouro-1.4b --benchmark gsm8k --mode completion --shots 3 --n 200 --max-tokens 256 --extra-body {"num_loops": 4} --out results/gsm8k_ouro-1.4b_3shot_T4.jsonl
+### 15:29:55 .venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11435/v1 --model ouro-1.4b --benchmark gsm8k --mode completion --shots 3 --n 200 --max-tokens 256 --extra-body {"num_loops": 4} --out results/gsm8k_ouro-1.4b_3shot_T4.jsonl
