@@ -5,3 +5,13 @@
 }
 ### 09:35:52 .venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11435/v1 --model ouro-1.4b --benchmark gsm8k --mode completion --shots 3 --n 200 --max-tokens 256 --extra-body {"num_loops": 4} --out results/gsm8k_ouro-1.4b_3shot_T4.jsonl
 ### 15:29:55 .venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11435/v1 --model ouro-1.4b --benchmark gsm8k --mode completion --shots 3 --n 200 --max-tokens 256 --extra-body {"num_loops": 4} --out results/gsm8k_ouro-1.4b_3shot_T4.jsonl
+  "max_tokens": 256,
+  "temperature": 0.0,
+  "seed": 0
+}
+### 17:11:37 .venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11435/v1 --model ouro-1.4b --benchmark gsm8k --mode completion --shots 3 --n 100 --max-tokens 256 --extra-body {"num_loops": 1} --out results/gsm8k_ouro-1.4b_3shot_T1.jsonl
+  "max_tokens": 256,
+  "temperature": 0.0,
+  "seed": 0
+}
+### 17:30:09 .venv/bin/python eval/run_eval.py --base-url http://127.0.0.1:11435/v1 --model ouro-1.4b --benchmark gsm8k --mode completion --shots 3 --n 100 --max-tokens 256 --extra-body {"num_loops": 2} --out results/gsm8k_ouro-1.4b_3shot_T2.jsonl

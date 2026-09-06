@@ -18,7 +18,10 @@ def load():
         loops = (rs[0].get("extra") or {}).get("num_loops")
         toks = [r.get("usage", {}).get("completion_tokens") for r in rs if r.get("usage")]
         toks = [t for t in toks if isinstance(t, int)]
+        nt = [r for r in rs if r.get("finish_reason") != "length"]
+        acc_ct = (sum(1 for r in nt if r.get("correct")) / len(nt)) if nt else 0.0
         rows.append(dict(file=os.path.basename(p), model=rs[0].get("model"), loops=loops, n=n, ok=ok, acc=acc, se=se,
+                         n_ct=len(nt), acc_ct=acc_ct,
                          trunc=sum(1 for r in rs if r.get("finish_reason") == "length"),
                          err=sum(1 for r in rs if r.get("error")),
                          lat=sum(r.get("latency_s", 0) for r in rs) / n,
@@ -37,8 +40,11 @@ def main():
     ouro = sorted([r for r in rows if 'ouro' in (r['model'] or '') and r['loops']], key=lambda r: r['loops'])
     if ouro:
         out.append("\n## Ouro-1.4B: accuracy vs recurrent steps (GSM8K 3-shot strict)\n")
-        out.append("| loops (T) | n | acc | s/item |\n|---|---|---|---|")
-        for r in ouro: out.append(f"| {r['loops']} | {r['n']} | {100*r['acc']:.1f} ± {100*r['se']:.1f} | {r['lat']:.1f} |")
+        out.append("| loops (T) | n | acc | truncated | acc on non-truncated | s/item |\n|---|---|---|---|---|---|")
+        for r in ouro: out.append(f"| {r['loops']} | {r['n']} | {100*r['acc']:.1f} ± {100*r['se']:.1f} | {r['trunc']} | {100*r['acc_ct']:.1f} (n={r['n_ct']}) | {r['lat']:.1f} |")
+        out.append("\nTruncation matters at low depth: a run that hits the 256-token cap never emits "
+                   "\"The answer is N\" and is scored wrong. The last column removes those, separating "
+                   "\"reasoned badly\" from \"never finished\".")
         out.append("\nThe paper only reports GSM8K at T=4 (78.92); its per-step ablation is on MMLU (41.21 / 60.43 / 66.71 / 67.45 at T=1..4).")
     open(os.path.join(ROOT, "results", "REPORT.md"), "w").write("\n".join(out) + "\n")
     print("\n".join(out))

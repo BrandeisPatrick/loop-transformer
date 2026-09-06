@@ -1125,3 +1125,59 @@ SHIM DESIGN NOTES: run on :11434 only if Ollama isn't running (or run Ollama on 
 - **Qwen-based looped models with weights**: only two families exist. (a) `mshapiro123/recurrent-qwen2.5-0.5b-{full-block,natural-keeper,r16-adapter}` — Qwen2.5-0.5B-Instruct retrofit, forced depth via `generate(max_loops=T)`, no KV cache, trained on a synthetic symbolic task; loops=1 reproduces the base exactly (confirmed: 17+26 → 43), loops=3 degrades general answers (confirmed). (b) `Thrillcrazyer/Qwen3_1.7B_LoopUS` (Looped Depth Up-Scaling, Qwen3-1.7B-Base, 4.07 GB) — custom `lds` architecture whose modeling code lives only in the GitHub repo; no math benchmarks published.
 - **Traps**: `ollama.com/zoecohn4/Ouro` is an unrelated 8B llama-family Q4_0 with a "snarky sidekick" system prompt, not ByteDance Ouro. `scpalmetto/Ouro-2.6B-Thinking-Fixed` GGUF was re-labelled `LlamaForCausalLM`, so it encodes a single pass, not the loop.
 - **Sizes** (all ungated, Apache-2.0): Ouro-1.4B 2.87 GB bf16, Ouro-2.6B 5.34 GB, Nanbeige4.2-3B 8.34 GB bf16 (Q4_K_M 2.7 GB), Huginn-0125 15.65 GB fp32.
+
+## 6. The Qwen question, answered
+
+The user's preference was a looped model "built on top of a trained Qwen model". Exhaustive Hugging Face
+and arXiv search (see §2 and the workflow transcripts) finds exactly **two** families of Qwen-derived
+looped models with released weights, and neither is a drop-in:
+
+1. **LoopUS** — `Thrillcrazyer/Qwen3_1.7B_LoopUS` (+ `_SFT`, `Ver2.1`, and Qwen3-4B / Qwen3-8B / Phi-4 /
+   TinyLlama / EXAONE siblings). Post-training "Looped Depth Up-Scaling" converts Qwen3-1.7B into
+   encoder (layers 0-1) → weight-shared looped reasoning block (layers 2-26, up to `N=20` iterations with
+   a confidence-head early exit) → decoder (layer 27). 4.07 GB bf16, Apache-2.0, 2.03B params.
+   Caveats: the `lds` architecture ships **no** modeling code on the Hub (no `auto_map`, so
+   `trust_remote_code` does not help) — the classes live only in `github.com/Thrillcrazyer/LoopUS`,
+   which is vendored here under `third_party/LoopUS`. Its loader defaults to **CPU fp32**, with no MPS
+   branch, so the shim passes `device_map="mps"` explicitly. No GGUF or MLX port exists, so Ollama
+   cannot serve it natively.
+2. **Shapiro's retrofit** — `mshapiro123/recurrent-qwen2.5-0.5b-{full-block,natural-keeper,r16-adapter}`.
+   Qwen2.5-0.5B-Instruct split into prelude (0-5) / weight-tied looped block (6-17) / coda (18-23), forced
+   depth via `generate(max_loops=T)`, `use_cache` disabled. Honest model card: competence is demonstrated
+   on a synthetic symbolic family only, general use is meant to run at T=1, and deep forced loops
+   degrade general behaviour. Confirmed locally: T=1 answers correctly, T=3 wanders.
+
+**Consequence for evaluation.** LoopUS reports only ARC / HellaSwag / PIQA / WinoGrande / OBQA / MMLU /
+LAMBADA and perplexity — **no GSM8K or MATH numbers exist to replicate**. So the Qwen track cannot be a
+replication; it has to be an original measurement. The useful experiment is looped-vs-its-own-base on
+identical prompts: `Qwen3_1.7B_LoopUS` at several recursion budgets against `Qwen3-1.7B-Base`, which is
+already served by Ollama and already measured here at 68.0% on the GSM8K subset. Everything else worth
+replicating (Ouro's 78.92, Huginn's r-sweep, Nanbeige's 92.7) comes from models trained looped from
+scratch, not from Qwen.
+
+Third-party conversions of *other* bases are better documented than either Qwen option: McLeish et al.
+(`smcleish/Recurrent-Llama-3.2-train-recurrence-{16,32}`) convert Llama-3.2-1B with a Huginn-style
+4/6/4 split, publish GSM8K 47.6 → 56.2 at recurrence 32, ship a matched non-recurrent baseline, and
+expose recurrence as a per-call `num_steps` kwarg. They are stored fp32 (5.54 GB), so they need disk
+freed before use.
+
+## 7. What one loop actually costs (observed)
+
+Forcing both looped models down to a single pass fails in two completely different ways, and the
+difference tracks how each was trained:
+
+- **Ouro-1.4B at T=1** stays fluent and well-formed but reasons incorrectly. Real GSM8K outputs:
+  *"The total cost of the trip is $300. Half of the cost is $300 / 2 = $150. The amount John is missing
+  is $300 - $150 = $150."* (gold 100), and *"12 months = 12 x 12 = 144. 144 - 12 = 132."* (gold 30).
+  Grammatical, correctly formatted, arithmetically coherent step to step — and wrong. Ouro was trained
+  with an entropy-regularized exit gate active at every recurrent step, so every step's hidden state is
+  decodable; what the extra loops buy is reasoning depth, not language.
+- **Nanbeige4.2-3B at num_loops=1** collapses into degenerate repetition
+  (`"** 達 answer answer answer answer …"`) at roughly double the decode speed. Its two-pass structure
+  was fixed during training (`loop_loss_weights=[]`, no per-loop supervision), so a single pass is not a
+  shallower model, it is an unfinished one.
+
+Test-time depth scaling is therefore a property of the training recipe rather than of looping per se.
+A looped architecture only gives you a usable compute/accuracy dial if intermediate depths were
+supervised — which is exactly the design difference between Ouro's learned exit gate and Nanbeige's
+fixed double pass.

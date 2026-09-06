@@ -2,7 +2,7 @@
 # Bring up LoopUS (Qwen3-1.7B looped, custom lds arch) behind the shim on port 11436, smoke it, run a small
 # GSM8K few-shot at two recursion depths, then shut it down. Needs ~4 GB (bf16 on MPS) — run when the Ouro shim is down.
 cd "$(dirname "$0")/.."
-S=${SCRATCH:-/tmp}; N=${N:-30}
+S=${SCRATCH:-/private/tmp/claude-501/-Users-patrickli-Documents-vibe/c637d19a-be90-4272-9fe5-c46d4bd25e1d/scratchpad}; N=${N:-50}
 pkill -f "port 11436" 2>/dev/null; sleep 1
 nohup .venv/bin/python serve/shim.py --model Thrillcrazyer/Qwen3_1.7B_LoopUS --backend lds --name loopus-qwen3-1.7b --loops ${LOOPS:-8} --dtype ${DTYPE:-bfloat16} --port 11436 > $S/shim_loopus.log 2>&1 &
 for i in $(seq 1 120); do curl -s -m 2 http://127.0.0.1:11436/api/version >/dev/null 2>&1 && break; sleep 3; done

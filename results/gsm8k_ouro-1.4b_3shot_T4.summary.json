@@ -1,0 +1,20 @@
+{
+  "benchmark": "gsm8k",
+  "model": "ouro-1.4b",
+  "extra": {
+    "num_loops": 4
+  },
+  "mode": "completion",
+  "api": "openai",
+  "think": null,
+  "shots": 3,
+  "n": 200,
+  "accuracy": 0.8,
+  "errors": 0,
+  "truncated": 2,
+  "mean_completion_tokens": 106.02,
+  "mean_latency_s": 38.57489757299423,
+  "max_tokens": 256,
+  "temperature": 0.0,
+  "seed": 0
+}

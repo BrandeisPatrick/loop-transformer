@@ -41,7 +41,15 @@ class HFBackend:
             # LoopUS (Looped Depth Up-Scaling): custom LDSForCausalLM from the LoopUS repo, not in HF auto classes.
             sys.path.insert(0, code_path or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "third_party", "LoopUS"))
             from models.modeling_lds import LDSForCausalLM
-            self.model = LDSForCausalLM.from_pretrained(model_id, torch_dtype=dtype, device_map=str(device))
+            # LoopUS's loader builds the backbone at the default dtype on CPU, loads a 4 GB state dict,
+            # THEN casts and moves. At fp32 that peaks near 12 GB on a 16 GB machine, so construct
+            # directly in the target dtype instead (~4 GB peak). Restore the global default afterwards.
+            _prev_dtype = torch.get_default_dtype()
+            torch.set_default_dtype(dtype)
+            try:
+                self.model = LDSForCausalLM.from_pretrained(model_id, torch_dtype=dtype, device_map=str(device))
+            finally:
+                torch.set_default_dtype(_prev_dtype)
             self.tok = getattr(self.model, "tokenizer", None) or AutoTokenizer.from_pretrained(tokenizer_id or model_id)
             if self.tok.pad_token is None: self.tok.pad_token = self.tok.eos_token
             self.model.eval()
