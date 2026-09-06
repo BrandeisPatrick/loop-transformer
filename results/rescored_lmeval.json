@@ -1,0 +1,46 @@
+[
+  {
+    "file": "gsm8k_ouro-1.4b_3shot_T1.jsonl",
+    "model": "ouro-1.4b",
+    "loops": 1,
+    "n": 100,
+    "strict": 0.2,
+    "strict_fixed": 0.23,
+    "flexible": 0.23,
+    "dollar_rate": 0.1,
+    "as_run": 0.23
+  },
+  {
+    "file": "gsm8k_ouro-1.4b_3shot_T2.jsonl",
+    "model": "ouro-1.4b",
+    "loops": 2,
+    "n": 34,
+    "strict": 0.5588235294117647,
+    "strict_fixed": 0.6764705882352942,
+    "flexible": 0.6764705882352942,
+    "dollar_rate": 0.17647058823529413,
+    "as_run": 0.6764705882352942
+  },
+  {
+    "file": "gsm8k_ouro-1.4b_3shot_T4.jsonl",
+    "model": "ouro-1.4b",
+    "loops": 4,
+    "n": 200,
+    "strict": 0.605,
+    "strict_fixed": 0.79,
+    "flexible": 0.8,
+    "dollar_rate": 0.23,
+    "as_run": 0.8
+  },
+  {
+    "file": "gsm8k_qwen3-1.7b-base_3shot.jsonl",
+    "model": "hf.co/mradermacher/Qwen3-1.7B-Base-GGUF:Q8_0",
+    "loops": null,
+    "n": 200,
+    "strict": 0.59,
+    "strict_fixed": 0.655,
+    "flexible": 0.715,
+    "dollar_rate": 0.095,
+    "as_run": 0.68
+  }
+]

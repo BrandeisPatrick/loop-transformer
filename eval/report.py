@@ -37,6 +37,16 @@ def main():
         ref = PAPER.get(key) or PAPER.get(r['model'])
         paper = f"{ref[1]:.1f}" if ref and (r['loops'] in (None, 4) or 'ouro' not in r['model']) else "—"
         out.append(f"| {r['file'].replace('.jsonl','')} | {r['model'][:40]} | {r['loops'] or ''} | {r['n']} | **{100*r['acc']:.1f}** ± {100*r['se']:.1f} | {paper} | {r['trunc']} | {r['err']} | {r['lat']:.1f} | {round(r['tok']) if r['tok'] else '—'} | {'done' if r['done'] else 'running'} |")
+    resc = os.path.join(ROOT, "results", "rescored_lmeval.json")
+    if os.path.exists(resc):
+        rs = {r["file"]: r for r in json.load(open(resc))}
+        out.append("\n## Same generations, four extraction rules\n")
+        out.append("See NOTES.md \u00a78: lm-eval's verbatim strict-match cannot capture a `$`-prefixed answer, "
+                   "which penalises the two models unequally.\n")
+        out.append("| run | as-run | lm-eval strict | strict with `$` | lm-eval flexible | `$`-formatted |\n|---|---|---|---|---|---|")
+        for f, r in rs.items():
+            out.append(f"| {f.replace('.jsonl','')} | {100*r['as_run']:.1f} | {100*r['strict']:.1f} | "
+                       f"{100*r['strict_fixed']:.1f} | {100*r['flexible']:.1f} | {100*r['dollar_rate']:.1f}% |")
     ouro = sorted([r for r in rows if 'ouro' in (r['model'] or '') and r['loops']], key=lambda r: r['loops'])
     if ouro:
         out.append("\n## Ouro-1.4B: accuracy vs recurrent steps (GSM8K 3-shot strict)\n")

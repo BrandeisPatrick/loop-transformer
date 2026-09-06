@@ -1181,3 +1181,53 @@ Test-time depth scaling is therefore a property of the training recipe rather th
 A looped architecture only gives you a usable compute/accuracy dial if intermediate depths were
 supervised — which is exactly the design difference between Ouro's learned exit gate and Nanbeige's
 fixed double pass.
+
+## 8. A scoring artifact that reverses the headline result
+
+While making the replication methodologically exact I hit something worth stating plainly, because it
+would silently corrupt any GSM8K comparison between these models.
+
+lm-evaluation-harness's `gsm8k_cot` **strict-match** filter is
+
+```
+regex_pattern: The answer is (\-?[0-9\.\,]+).      then take_first
+```
+
+The capture class holds only digits, commas and dots, so it cannot match `The answer is $250.` — a
+dollar sign stops it dead. The same task's metric block then declares
+
+```
+regexes_to_ignore: [",", "\$", "(?s).*#### ", "\.$"]
+```
+
+which shows the authors intended a currency prefix to be irrelevant to correctness. But that list is
+applied to the string the regex already captured, and on a `$`-prefixed answer the regex captures
+nothing, so the ignore rule never runs. The declared intent and the implemented behaviour disagree.
+
+That would be a curiosity if the two models formatted answers alike. They do not:
+
+| | `$`-formatted answers | correct answers discarded by the quirk |
+|---|---|---|
+| Ouro-1.4B (T=4) | 23.0% | 37 of 200 |
+| Qwen3-1.7B-Base | 9.5% | 13 of 200 |
+
+Ouro writes currency answers two and a half times as often, so the verbatim rule fines it roughly three
+times as heavily. Scoring the *same saved generations* four ways:
+
+| scorer | Ouro-1.4B T=4 | Qwen3-1.7B-Base | gap |
+|---|---|---|---|
+| our extractor (strips `$`) | 80.0 | 68.0 | **+12.0** |
+| lm-eval strict-match, verbatim | 60.5 | 59.0 | **+1.5** |
+| strict-match with `$` allowed | 79.0 | 65.5 | **+13.5** |
+| lm-eval flexible-extract | 80.0 | 71.5 | **+8.5** |
+| *paper (full test set)* | *78.92* | *70.28* | *+8.64* |
+
+Three of the four scorers agree the looped 1.4B beats the conventional 1.7B by 8.5 to 13.5 points. The
+verbatim strict-match alone shrinks that to 1.5 points and would support the opposite write-up — that
+looping buys nothing — purely because one model likes dollar signs.
+
+Two conclusions. First, the published 78.92 cannot have come from the verbatim strict-match; both the
+`$`-corrected strict figure (79.0) and the flexible-extract gap (+8.5 vs the paper's +8.64) line up with
+it closely, so the replication stands. Second, any looped-vs-baseline math comparison should report the
+extraction rule and preferably more than one, because here the choice of rule is worth more than the
+architecture. `eval/rescore.py` re-scores saved generations all four ways at zero compute cost.
