@@ -3,6 +3,7 @@
 #   Qwen3-4B-Base  -> Ouro's larger base comparator (paper Table 7: 72.86 vs Ouro-1.4B 78.92), base protocol
 #   Qwen3.5-4B     -> Nanbeige4.2-3B's own card comparator, instruct protocol, thinking off
 cd "$(dirname "$0")/.."
+pgrep -f "scripts/memguard.sh" >/dev/null || { nohup scripts/memguard.sh >/dev/null 2>&1 & sleep 1; }   # memory guard: kills our jobs if free RAM < 20% or swap > 2.5 GB
 PY=.venv/bin/python; OLL=http://127.0.0.1:11434/v1
 run() { echo "### $(date '+%H:%M:%S') $*"; "$@" 2>&1 | grep -vE "Warning|warn" | tail -4; }
 for m in "hf.co/mradermacher/Qwen3-4B-Base-GGUF:Q4_K_M" "qwen3.5:4b"; do

@@ -55,7 +55,8 @@ def ollama_raw(base_url, model, prompt, max_tokens, temperature, extra_body, tim
     """Ollama-native /api/generate with raw=true: no chat template applied (faithful few-shot for base models)."""
     root = base_url.rstrip('/')
     root = root[:-3] if root.endswith('/v1') else root
-    opts = {"num_predict": max_tokens, "temperature": temperature, "stop": stop}
+    opts = {"num_predict": max_tokens, "temperature": temperature, "stop": stop,
+            "num_ctx": min(8192, max(2048, 1024 + max_tokens))}   # cap KV cache; see memguard notes
     body = {"model": model, "prompt": prompt, "raw": True, "stream": False, "options": opts}
     for k, v in (extra_body or {}).items():
         (opts if k in ("num_loops", "num_ctx", "top_p", "top_k", "seed") else body)[k] = v
@@ -71,7 +72,8 @@ def ollama_chat(base_url, model, messages, max_tokens, temperature, extra_body, 
     """Ollama-native /api/chat (lets us toggle thinking explicitly and read the thinking field)."""
     root = base_url.rstrip('/')
     root = root[:-3] if root.endswith('/v1') else root
-    opts = {"num_predict": max_tokens, "temperature": temperature}
+    opts = {"num_predict": max_tokens, "temperature": temperature,
+            "num_ctx": min(8192, max(2048, 1024 + max_tokens))}   # cap KV cache; see memguard notes
     body = {"model": model, "messages": messages, "stream": False, "options": opts}
     if think is not None: body["think"] = think
     for k, v in (extra_body or {}).items():

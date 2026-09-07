@@ -3,6 +3,7 @@
 # Memory policy: Ollama is started with OLLAMA_MAX_LOADED_MODELS=1 / KEEP_ALIVE=1m; the Ouro shim is
 # killed as soon as the Ouro runs are done so at most one model is resident at any time.
 cd "$(dirname "$0")/.."
+pgrep -f "scripts/memguard.sh" >/dev/null || { nohup scripts/memguard.sh >/dev/null 2>&1 & sleep 1; }   # memory guard: kills our jobs if free RAM < 20% or swap > 2.5 GB
 PY=.venv/bin/python
 OLL=http://127.0.0.1:11434/v1
 SHIM=http://127.0.0.1:11435/v1

@@ -5,6 +5,7 @@
 # 2) Ouro-1.4B MMLU 5-shot at T=1..4 — the paper's per-step ablation (41.21/60.43/66.71/67.45).
 set -u
 cd "$(dirname "$0")/.."
+pgrep -f "scripts/memguard.sh" >/dev/null || { nohup scripts/memguard.sh >/dev/null 2>&1 & sleep 1; }   # memory guard: kills our jobs if free RAM < 20% or swap > 2.5 GB
 echo "=== $(date '+%H:%M:%S') phase 2 start ==="
 # Re-run the phase-1 Ollama evals: everything already answered is skipped, so this only retries
 # items that hit a transient 500. Cheap, and it removes a silent penalty from the accuracy.
