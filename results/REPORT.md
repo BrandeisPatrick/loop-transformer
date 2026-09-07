@@ -41,3 +41,13 @@ See NOTES.md §8: lm-eval's verbatim strict-match cannot capture a `$`-prefixed 
 Truncation matters at low depth: a run that hits the 256-token cap never emits "The answer is N" and is scored wrong. The last column removes those, separating "reasoned badly" from "never finished".
 
 The paper only reports GSM8K at T=4 (78.92); its per-step ablation is on MMLU (41.21 / 60.43 / 66.71 / 67.45 at T=1..4).
+
+## Ouro-1.4B: MMLU 5-shot vs recurrent steps (lm-eval, the paper's published ablation)
+
+~3% of each subject (all 57 subjects, ~420 questions), log-likelihood scoring, no chat template. Paper numbers are Table 10 on the full set; ± is lm-eval's reported standard error.
+
+| loops (T) | MMLU (ours) | paper | humanities | other | social sci | STEM |
+|---|---|---|---|---|---|---|
+| 1 | **39.0** ± 2.2 | 41.21 | 31.1 | 47.5 | 43.9 | 37.5 |
+| 2 | **58.4** ± 2.3 | 60.43 | 50.0 | 61.6 | 67.3 | 58.7 |
+| 4 | **67.3** ± 2.2 | 67.45 | 63.5 | 64.6 | 77.6 | 65.4 |

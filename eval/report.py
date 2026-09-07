@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Build results/REPORT.md: local GSM8K results vs published numbers, plus an Ouro loop-count table."""
-import glob, json, os, math
+import glob, json, os, math, re
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 PAPER = {  # published reference numbers (full test sets), see NOTES.md §4
     "ouro-1.4b|T4": ("Ouro-1.4B, T=4 (paper Tab. 16, 3-shot CoT strict)", 78.92),
@@ -58,6 +58,21 @@ def main():
                    "\"The answer is N\" and is scored wrong. The last column removes those, separating "
                    "\"reasoned badly\" from \"never finished\".")
         out.append("\nThe paper only reports GSM8K at T=4 (78.92); its per-step ablation is on MMLU (41.21 / 60.43 / 66.71 / 67.45 at T=1..4).")
+    # MMLU depth sweep from lm-eval outputs (results/mmlu/ouro-1.4b_T*/.../results_*.json)
+    mm = []
+    for f in sorted(glob.glob(os.path.join(ROOT, "results", "mmlu", "ouro-1.4b_T*", "**", "results_*.json"), recursive=True)):
+        j = json.load(open(f)); T = int(re.search(r"_T(\d)", f).group(1)); r = j["results"]["mmlu"]
+        groups = {g.split("_", 1)[1]: 100 * j["results"][g]["acc,none"] for g in
+                  ("mmlu_humanities", "mmlu_other", "mmlu_social_sciences", "mmlu_stem") if g in j["results"]}
+        mm.append((T, 100 * r["acc,none"], 100 * r["acc_stderr,none"], groups))
+    if mm:
+        paper = {1: 41.21, 2: 60.43, 3: 66.71, 4: 67.45, 5: 66.64, 6: 65.77, 7: 65.28, 8: 64.49}
+        out.append("\n## Ouro-1.4B: MMLU 5-shot vs recurrent steps (lm-eval, the paper's published ablation)\n")
+        out.append("~3% of each subject (all 57 subjects, ~420 questions), log-likelihood scoring, no chat template. "
+                   "Paper numbers are Table 10 on the full set; ± is lm-eval's reported standard error.\n")
+        out.append("| loops (T) | MMLU (ours) | paper | humanities | other | social sci | STEM |\n|---|---|---|---|---|---|---|")
+        for T, a, se, g in sorted(mm):
+            out.append(f"| {T} | **{a:.1f}** ± {se:.1f} | {paper.get(T, '—')} | {g.get('humanities', 0):.1f} | {g.get('other', 0):.1f} | {g.get('social_sciences', 0):.1f} | {g.get('stem', 0):.1f} |")
     open(os.path.join(ROOT, "results", "REPORT.md"), "w").write("\n".join(out) + "\n")
     print("\n".join(out))
 if __name__ == "__main__":

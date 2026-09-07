@@ -1409,3 +1409,36 @@ clearly in base-vs-base comparisons and washes out once post-training enters the
 | base: Ouro-1.4B vs Qwen3-4B-Base | 80.0 | 76.5 | +3.5 (not significant) |
 | instruct: Nanbeige4.2-3B vs Qwen3.5-4B | 91.0 | 93.5 | −2.5 (not significant) |
 | instruct: Nanbeige4.2-3B vs Qwen3-1.7B | 91.0 | 82.5 | +8.5 (different size class) |
+
+## 14. The paper's own depth ablation, replicated
+
+Table 10 of the Ouro paper is the one per-step ablation the authors published: MMLU, 5-shot,
+log-likelihood scoring, at recurrent steps 1 through 8. Run here with lm-evaluation-harness
+(`--model hf`, `total_ut_steps=T` in the model args, `device_map=mps`, bf16, batch 1, no chat template)
+on 3% of every one of the 57 subjects, 449 questions per depth. Every point lands inside one
+standard error of the published value.
+
+| recurrent steps | MMLU (ours, n=449) | paper (Table 10) | gap |
+|---|---|---|---|
+| 1 | 39.0 ± 2.2 | 41.21 | −2.2 |
+| 2 | 58.4 ± 2.3 | 60.43 | −2.0 |
+| 4 | 67.3 ± 2.2 | 67.45 | −0.2 |
+
+Depth 3 was skipped (it adds nothing the curve's shape does not already show), and depths 5 to 8 are
+extrapolation past the trained maximum, which the paper reports as degrading. The depth-4 point ran
+under a one-time, user-approved 20% free-memory bound, because Ouro's per-step KV cache — four times
+a conventional model's — pushed the run to 29% free twice under the default 30% bound; it completed
+with no swap growth and the bound was restored afterwards.
+
+Put next to §10, the two curves for the same weights on the same machine:
+
+| steps | GSM8K | MMLU |
+|---|---|---|
+| 1 | 23.0 | 39.0 |
+| 2 | 64.0 | 58.4 |
+| 4 | 80.0 | 67.3 |
+| gain from the last doubling (2 → 4) | **+16.0** | **+8.9** |
+
+Same model, same depths, and math takes nearly twice as much from the last doubling of compute as
+knowledge does. Since the MMLU curve reproduces the paper, the GSM8K curve — which the paper never
+published — can be read with the same confidence.

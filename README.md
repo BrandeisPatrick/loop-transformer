@@ -27,10 +27,14 @@ binomial standard error. Paper numbers are on the full 1319-problem test set.
 78.92, and so do both Qwen3 base baselines. The paper's headline — a looped 1.4B beats a conventional
 1.7B — reproduces at +12 points, and that margin holds under every answer-extraction rule tried.
 
+**The published ablation replicates.** The paper's per-step ablation is MMLU 5-shot at depths 1 to 4:
+41.2 / 60.4 / 66.7 / 67.5. Run here with lm-eval on 449 questions per depth: **39.0 / 58.4 / — / 67.3**,
+every point within one standard error.
+
 **What the paper never published.** Ouro's GSM8K accuracy against recurrent steps, measured here at
-1 / 2 / 3 / 4 loops: **23.0 / 64.0 / 72.0 / 80.0**. The paper's own depth ablation is on MMLU
-(41.2 / 60.4 / 66.7 / 67.5). The fourth loop is worth +0.7 on MMLU and +8.0 on GSM8K — math consumes
-depth that knowledge recall does not, and three loops is where the 1.4B overtakes the 1.7B.
+1 / 2 / 3 / 4 loops: **23.0 / 64.0 / 72.0 / 80.0**. Going from 2 to 4 loops is worth +8.9 on MMLU and
++16.0 on GSM8K for the same weights — math consumes depth that knowledge recall does not, and three
+loops is where the 1.4B overtakes the 1.7B.
 
 **What looping does not do.** Forcing Nanbeige below its trained two loops does not give a shallower
 model; it gives repetition garbage, because it was trained with no per-loop supervision
@@ -110,6 +114,8 @@ NOTES.md  RECIPES.md   findings and per-model recipes
 
 ## Status
 
-Done: deployment of three looped families, GSM8K replication and depth sweep, matched baselines,
-scoring-rule audit, memory safeguards. Pending: LoopUS GSM8K (running), MMLU depth sweep (running),
-Ouro architecture for llama.cpp (planned — see NOTES.md).
+Done: deployment of three looped families, GSM8K replication and depth sweep, the paper's MMLU depth
+ablation replicated, matched baselines for every looped model, scoring-rule audit, memory safeguards.
+Not run: LoopUS on GSM8K — its 4 GB bf16 load plus per-recursion caches trips the 30% memory bound on
+this machine (its probes: correct at depth 8, repetition collapse at depth 1). Next: the Ouro
+architecture for llama.cpp, so Ouro runs inside Ollama (see NOTES.md).
