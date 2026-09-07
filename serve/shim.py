@@ -150,6 +150,10 @@ class HFBackend:
                             gk["max_context"] = max(4096, int(inputs["input_ids"].shape[1]) + max_tokens)
                             out = self.model.generate(**gk)
                             new = out[0, inputs["input_ids"].shape[1]:]
+                            # TextIteratorStreamer(skip_prompt=True) discards the FIRST put() as the prompt.
+                            # HF generate feeds the prompt first; this path must do the same or the
+                            # generated tokens are the ones thrown away (observed: empty output).
+                            streamer.put(inputs["input_ids"][:1].cpu())
                             streamer.put(new.unsqueeze(0).cpu()); streamer.end(); return
                         self.model.generate(**gen_kwargs)
                 except Exception as e:  # surface errors to the stream

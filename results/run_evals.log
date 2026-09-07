@@ -41,3 +41,18 @@
   "seed": 0
 }
 ### 19:59:28 .venv/bin/python eval/run_eval.py --api ollama --think on --base-url http://127.0.0.1:11434/v1 --model hf.co/bartowski/Nanbeige_Nanbeige4.2-3B-GGUF:Q4_K_M --benchmark gsm8k --n 50 --max-tokens 4096 --out results/gsm8k_nanbeige4.2-3b_loops2_think.jsonl
+  "max_tokens": 4096,
+  "temperature": 0.0,
+  "seed": 0
+}
+### 20:54:03 ALL DONE
+bench    model                        extra                      n    acc trunc     tok   s/it
+gsm8k    nanbeige4.2:loops1           {}                        30  0.000    30     256    7.1
+gsm8k    hf.co/bartowski/Nanbeige_Nan {}                       200  0.910     1     314   15.7
+gsm8k    hf.co/bartowski/Nanbeige_Nan {}                        50  0.920     3    1264   64.4
+gsm8k    ouro-1.4b                    {"num_loops": 1}         100  0.230    11      84   11.1
+gsm8k    ouro-1.4b                    {"num_loops": 2}         100  0.640     0     100   19.3
+gsm8k    ouro-1.4b                    {"num_loops": 3}         100  0.720     0     104   28.2
+gsm8k    ouro-1.4b                    {"num_loops": 4}         200  0.800     2     106   38.6
+gsm8k    hf.co/mradermacher/Qwen3-1.7 {}                       200  0.680    17     133    2.9
+gsm8k    qwen3:1.7b                   {}                       200  0.825     1     292    4.2

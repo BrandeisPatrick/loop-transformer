@@ -4,13 +4,15 @@ Local numbers are on a fixed 200-problem subset (seed 0) unless n says otherwise
 
 | run | model | loops | n | acc | paper | trunc | err | s/item | tok/item | status |
 |---|---|---|---|---|---|---|---|---|---|---|
+| gsm8k_nanbeige4.2-3b_loops1_nothink | nanbeige4.2:loops1 |  | 30 | **0.0** ± 0.0 | — | 30 | 0 | 7.1 | 256 | done |
 | gsm8k_nanbeige4.2-3b_loops2_nothink | hf.co/bartowski/Nanbeige_Nanbeige4.2-3B- |  | 200 | **91.0** ± 2.0 | 92.7 | 1 | 1 | 15.7 | 314 | done |
+| gsm8k_nanbeige4.2-3b_loops2_think | hf.co/bartowski/Nanbeige_Nanbeige4.2-3B- |  | 50 | **92.0** ± 3.8 | 92.7 | 3 | 0 | 64.4 | 1264 | done |
 | gsm8k_ouro-1.4b_3shot_T1 | ouro-1.4b | 1 | 100 | **23.0** ± 4.2 | — | 11 | 0 | 11.1 | 84 | done |
 | gsm8k_ouro-1.4b_3shot_T2 | ouro-1.4b | 2 | 100 | **64.0** ± 4.8 | — | 0 | 0 | 19.3 | 100 | done |
 | gsm8k_ouro-1.4b_3shot_T3 | ouro-1.4b | 3 | 100 | **72.0** ± 4.5 | — | 0 | 0 | 28.2 | 104 | done |
 | gsm8k_ouro-1.4b_3shot_T4 | ouro-1.4b | 4 | 200 | **80.0** ± 2.8 | 78.9 | 2 | 0 | 38.6 | 106 | done |
 | gsm8k_qwen3-1.7b-base_3shot | hf.co/mradermacher/Qwen3-1.7B-Base-GGUF: |  | 200 | **68.0** ± 3.3 | 70.3 | 17 | 0 | 2.9 | 133 | done |
-| gsm8k_qwen3-1.7b_nothink | qwen3:1.7b |  | 9 | **66.7** ± 15.7 | — | 0 | 0 | 4.5 | 302 | running |
+| gsm8k_qwen3-1.7b_nothink | qwen3:1.7b |  | 200 | **82.5** ± 2.7 | — | 1 | 0 | 4.2 | 292 | done |
 
 ## Same generations, four extraction rules
 

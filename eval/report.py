@@ -6,6 +6,8 @@ PAPER = {  # published reference numbers (full test sets), see NOTES.md §4
     "ouro-1.4b|T4": ("Ouro-1.4B, T=4 (paper Tab. 16, 3-shot CoT strict)", 78.92),
     "hf.co/mradermacher/Qwen3-1.7B-Base-GGUF:Q8_0": ("Qwen3-1.7B-Base (Ouro paper baseline, 3-shot CoT strict)", 70.28),
     "hf.co/bartowski/Nanbeige_Nanbeige4.2-3B-GGUF:Q4_K_M": ("Nanbeige4.2-3B-Base card: 92.7 (setting unpublished; instruct/thinking model here)", 92.7),
+    "hf.co/mradermacher/Qwen3-4B-Base-GGUF:Q4_K_M": ("Qwen3-4B-Base (Ouro paper Table 7, 3-shot CoT strict)", 72.86),
+    "nanbeige4.2:loops1": ("no published number; forced below trained depth", None),
 }
 def load():
     rows = []
@@ -35,7 +37,7 @@ def main():
     for r in rows:
         key = f"{r['model']}|T{r['loops']}" if r['loops'] else r['model']
         ref = PAPER.get(key) or PAPER.get(r['model'])
-        paper = f"{ref[1]:.1f}" if ref and (r['loops'] in (None, 4) or 'ouro' not in r['model']) else "—"
+        paper = f"{ref[1]:.1f}" if ref and ref[1] is not None and (r['loops'] in (None, 4) or 'ouro' not in r['model']) else "—"
         out.append(f"| {r['file'].replace('.jsonl','')} | {r['model'][:40]} | {r['loops'] or ''} | {r['n']} | **{100*r['acc']:.1f}** ± {100*r['se']:.1f} | {paper} | {r['trunc']} | {r['err']} | {r['lat']:.1f} | {round(r['tok']) if r['tok'] else '—'} | {'done' if r['done'] else 'running'} |")
     resc = os.path.join(ROOT, "results", "rescored_lmeval.json")
     if os.path.exists(resc):
