@@ -1,4 +1,4 @@
-# looplm — looped transformers, locally, next to Ollama
+# Loop Transformer — looped language models, locally, next to Ollama
 
 Deploy **looped / recurrent-depth** language models on an Apple-Silicon Mac, expose them the way Ollama
 exposes models, and measure them against the baselines their own papers used — through one harness,
