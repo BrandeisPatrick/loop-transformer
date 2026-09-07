@@ -1,4 +1,4 @@
-From 92856d479b34c622dbf9dee4a8180e97c99b0efa Mon Sep 17 00:00:00 2001
+From 2e3ef1459e6cc22797fd16171a7f93c49c5926fc Mon Sep 17 00:00:00 2001
 From: BrandeisPatrick <kokomo31ads@gmail.com>
 Date: Mon, 7 Sep 2026 19:17:43 -0400
 Subject: [PATCH] model: add Ouro (looped / universal-transformer LM)
@@ -23,7 +23,7 @@ Tested on Apple M4 (Metal), Ouro-1.4B F16: loads as 96 logical layers / 1.43B
 params, and greedy output is token-identical to the transformers reference.
 ---
  conversion/__init__.py    |   1 +
- conversion/ouro.py        |  59 +++++++++++
+ conversion/ouro.py        |  71 +++++++++++++
  gguf-py/gguf/constants.py |  18 ++++
  src/llama-arch.cpp        |   1 +
  src/llama-arch.h          |   1 +
@@ -31,7 +31,7 @@ params, and greedy output is token-identical to the transformers reference.
  src/llama-model.cpp       |   3 +
  src/models/models.h       |  15 +++
  src/models/ouro.cpp       | 213 ++++++++++++++++++++++++++++++++++++++
- 9 files changed, 312 insertions(+)
+ 9 files changed, 324 insertions(+)
  create mode 100644 conversion/ouro.py
  create mode 100644 src/models/ouro.cpp
 
@@ -49,10 +49,10 @@ index 4d58bcd..b68cbda 100644
      "NemotronHPuzzleForCausalLM": "nemotron",
 diff --git a/conversion/ouro.py b/conversion/ouro.py
 new file mode 100644
-index 0000000..87f4220
+index 0000000..0ea7451
 --- /dev/null
 +++ b/conversion/ouro.py
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,71 @@
 +from __future__ import annotations
 +
 +from .base import ModelBase, gguf, logger
@@ -73,8 +73,10 @@ index 0000000..87f4220
 +      applied to the sublayer outputs are the `_2` suffixed ones. The generic tensor map would
 +      route `post_attention_layernorm` to ATTN_POST_NORM (its gemma2/olmo2 meaning), so the four
 +      norms are mapped explicitly below instead.
-+    * `model.early_exit_gate` is dropped: it only selects which already-computed loop's hidden
-+      state is read out and never changes what is computed, so a fixed-depth graph is faithful.
++    * `model.early_exit_gate` is dropped. It selects which already-computed loop feeds the LM head
++      rather than changing what is computed, and with the shipped early_exit_threshold of 1.0 it
++      never fires at all, so a fixed-depth graph reproduces the reference exactly. It must be
++      dropped explicitly: the converter raises on any tensor it cannot map.
 +    """
 +
 +    model_arch = gguf.MODEL_ARCH.OURO
@@ -92,6 +94,16 @@ index 0000000..87f4220
 +        # The reference applies model.norm at the end of every loop, including the last, so the
 +        # between-loop norm must run: skip_loop_final_norm stays False.
 +        self.gguf_writer.add_skip_loop_final_norm(False)
++
++        # The graph always runs all num_loops steps. That matches the reference only while the exit
++        # gate never fires, which is what early_exit_threshold = 1.0 guarantees (a sigmoid cannot
++        # reach 1.0 in bf16 for any logit these weights produce). A checkpoint shipping a lower
++        # threshold would exit early in transformers and would NOT match this conversion.
++        threshold = self.hparams.get("early_exit_threshold", 1.0)
++        if threshold is None or float(threshold) < 1.0:
++            logger.warning(
++                f"early_exit_threshold={threshold} < 1.0: the reference may exit before "
++                f"{n_loops} loops, but llama.cpp always runs all of them; outputs will differ")
 +
 +    def modify_tensors(self, data_torch, name, bid):
 +        # The early-exit gate is a readout-only head; it never feeds the next loop.

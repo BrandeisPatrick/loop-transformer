@@ -18,8 +18,10 @@ class OuroModel(LlamaModel):
       applied to the sublayer outputs are the `_2` suffixed ones. The generic tensor map would
       route `post_attention_layernorm` to ATTN_POST_NORM (its gemma2/olmo2 meaning), so the four
       norms are mapped explicitly below instead.
-    * `model.early_exit_gate` is dropped: it only selects which already-computed loop's hidden
-      state is read out and never changes what is computed, so a fixed-depth graph is faithful.
+    * `model.early_exit_gate` is dropped. It selects which already-computed loop feeds the LM head
+      rather than changing what is computed, and with the shipped early_exit_threshold of 1.0 it
+      never fires at all, so a fixed-depth graph reproduces the reference exactly. It must be
+      dropped explicitly: the converter raises on any tensor it cannot map.
     """
 
     model_arch = gguf.MODEL_ARCH.OURO
@@ -37,6 +39,16 @@ class OuroModel(LlamaModel):
         # The reference applies model.norm at the end of every loop, including the last, so the
         # between-loop norm must run: skip_loop_final_norm stays False.
         self.gguf_writer.add_skip_loop_final_norm(False)
+
+        # The graph always runs all num_loops steps. That matches the reference only while the exit
+        # gate never fires, which is what early_exit_threshold = 1.0 guarantees (a sigmoid cannot
+        # reach 1.0 in bf16 for any logit these weights produce). A checkpoint shipping a lower
+        # threshold would exit early in transformers and would NOT match this conversion.
+        threshold = self.hparams.get("early_exit_threshold", 1.0)
+        if threshold is None or float(threshold) < 1.0:
+            logger.warning(
+                f"early_exit_threshold={threshold} < 1.0: the reference may exit before "
+                f"{n_loops} loops, but llama.cpp always runs all of them; outputs will differ")
 
     def modify_tensors(self, data_torch, name, bid):
         # The early-exit gate is a readout-only head; it never feeds the next loop.
