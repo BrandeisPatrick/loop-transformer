@@ -18,6 +18,10 @@ import argparse, json, os, re, sys, time, random, threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 
+# How long Ollama keeps a model resident after a request. "0" unloads immediately, so between
+# requests nothing is loaded; each item then pays a reload (~1-3 s for a Q4 model from page cache).
+# Chosen deliberately: memory headroom over speed.
+OLLAMA_KEEP_ALIVE = os.environ.get("LOOPLM_KEEP_ALIVE", "0")
 COT_SUFFIX = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 
 # The standard 8 chain-of-thought exemplars used by lm-evaluation-harness `gsm8k_cot` (Wei et al. 2022).
@@ -56,8 +60,9 @@ def ollama_raw(base_url, model, prompt, max_tokens, temperature, extra_body, tim
     root = base_url.rstrip('/')
     root = root[:-3] if root.endswith('/v1') else root
     opts = {"num_predict": max_tokens, "temperature": temperature, "stop": stop,
-            "num_ctx": min(8192, max(2048, 1024 + max_tokens))}   # cap KV cache; see memguard notes
-    body = {"model": model, "prompt": prompt, "raw": True, "stream": False, "options": opts}
+            "num_ctx": min(4096, max(2048, 1024 + max_tokens))}   # cap KV cache; see memguard notes
+    body = {"model": model, "prompt": prompt, "raw": True, "stream": False, "options": opts,
+            "keep_alive": OLLAMA_KEEP_ALIVE}
     for k, v in (extra_body or {}).items():
         (opts if k in ("num_loops", "num_ctx", "top_p", "top_k", "seed") else body)[k] = v
     t0 = time.time()
@@ -73,8 +78,9 @@ def ollama_chat(base_url, model, messages, max_tokens, temperature, extra_body, 
     root = base_url.rstrip('/')
     root = root[:-3] if root.endswith('/v1') else root
     opts = {"num_predict": max_tokens, "temperature": temperature,
-            "num_ctx": min(8192, max(2048, 1024 + max_tokens))}   # cap KV cache; see memguard notes
-    body = {"model": model, "messages": messages, "stream": False, "options": opts}
+            "num_ctx": min(4096, max(2048, 1024 + max_tokens))}   # cap KV cache; see memguard notes
+    body = {"model": model, "messages": messages, "stream": False, "options": opts,
+            "keep_alive": OLLAMA_KEEP_ALIVE}
     if think is not None: body["think"] = think
     for k, v in (extra_body or {}).items():
         (opts if k in ("num_loops", "num_ctx", "top_p", "top_k", "seed") else body)[k] = v

@@ -8,7 +8,7 @@ PY=.venv/bin/python
 OLL=http://127.0.0.1:11434/v1
 SHIM=http://127.0.0.1:11435/v1
 NB="hf.co/bartowski/Nanbeige_Nanbeige4.2-3B-GGUF:Q4_K_M"
-run() { echo "### $(date '+%H:%M:%S') $*"; "$@" 2>&1 | grep -vE "Warning|warn" | tail -4; }
+run() { scripts/memwait.sh || return 1; echo "### $(date '+%H:%M:%S') $*"; "$@" 2>&1 | grep -vE "Warning|warn" | tail -4; }
 # --- Phase 1: Ouro-1.4B via shim. GSM8K base-model protocol: 3-shot CoT, strict "The answer is N", greedy, 256 tok
 run $PY eval/run_eval.py --base-url $SHIM --model ouro-1.4b --benchmark gsm8k --mode completion --shots 3 --n 200 --max-tokens 256 --extra-body '{"num_loops": 4}' --out results/gsm8k_ouro-1.4b_3shot_T4.jsonl
 run $PY eval/run_eval.py --base-url $SHIM --model ouro-1.4b --benchmark gsm8k --mode completion --shots 3 --n 100 --max-tokens 256 --extra-body '{"num_loops": 1}' --out results/gsm8k_ouro-1.4b_3shot_T1.jsonl
