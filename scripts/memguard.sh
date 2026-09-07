@@ -27,11 +27,14 @@ except Exception: pass" 2>/dev/null; }
 sweep() {
   local why="$1"
   log "KILL: $why (free=${F}% swap=${S}MB, base swap ${S0}MB; bounds: free>=${MIN_FREE}%, swap growth<=${SWAP_GROWTH}MB)"
-  pkill -f "serve/shim.py" 2>/dev/null && log "  killed shim"
-  pkill -f "lm_eval" 2>/dev/null && log "  killed lm_eval"
+  # Patterns are anchored to the start of the command line so they match only the real
+  # processes, never a shell whose command text merely mentions these names.
+  pkill -f "^[^ ]*python serve/shim.py" 2>/dev/null && log "  killed shim"
+  pkill -f "^[^ ]*(python|lm_eval) [^ ]*lm_eval" 2>/dev/null && log "  killed lm_eval"
+  pkill -f "^[^ ]*/lm_eval " 2>/dev/null
   for m in $(loaded_models); do ollama stop "$m" >/dev/null 2>&1 && log "  ollama stop $m"; done
-  pkill -f "eval/run_eval.py" 2>/dev/null && log "  killed run_eval.py"
-  pkill -f "scripts/run_baselines.sh|scripts/run_evals.sh|scripts/run_phase2.sh|scripts/after_baselines.sh|scripts/loopus_smoke.sh|scripts/run_mmlu_sweep.sh" 2>/dev/null && log "  killed eval chain scripts"
+  pkill -f "^[^ ]*python eval/run_eval.py" 2>/dev/null && log "  killed run_eval.py"
+  pkill -f "^(/bin/)?bash scripts/(run_baselines|run_evals|run_phase2|after_baselines|loopus_smoke|run_mmlu_sweep)\.sh" 2>/dev/null && log "  killed eval chain scripts"
   osascript -e "display notification \"free ${F}%, swap ${S} MB — killed looplm jobs\" with title \"looplm memguard\"" >/dev/null 2>&1
 }
 S0=$(swap_mb); S0=${S0:-0}
