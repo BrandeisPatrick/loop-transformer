@@ -13,6 +13,10 @@ NB="hf.co/bartowski/Nanbeige_Nanbeige4.2-3B-GGUF:Q4_K_M"
   --model "$NB" --benchmark gsm8k --n 200 --max-tokens 1024 \
   --out results/gsm8k_nanbeige4.2-3b_loops2_nothink.jsonl 2>&1 | grep -vE "Warning" | tail -3
 pkill -f "serve/shim.py" 2>/dev/null; sleep 3          # free the Ouro shim's ~3 GB
+# Unload whatever Ollama still holds (keep_alive would otherwise keep a 3 GB model resident for a
+# minute), so the 4 GB LoopUS load never overlaps another model on this 16 GB machine.
+for m in $(curl -s -m 5 http://127.0.0.1:11434/api/ps | python3 -c "import sys,json; print(' '.join(x['name'] for x in json.load(sys.stdin).get('models',[])))" 2>/dev/null); do ollama stop "$m"; done
+sleep 5; echo "memory before LoopUS: $(memory_pressure | grep 'free percentage')"
 curl -s -m 3 http://127.0.0.1:11434/api/ps >/dev/null && echo "(ollama up; models unload after keep_alive)"
 bash scripts/loopus_smoke.sh
 echo "=== $(date '+%H:%M:%S') LoopUS done; MMLU sweep next ==="
