@@ -1,0 +1,18 @@
+{
+  "benchmark": "gsm8k",
+  "model": "hf.co/mradermacher/Qwen3-4B-Base-GGUF:Q4_K_M",
+  "extra": {},
+  "mode": "completion",
+  "api": "ollama",
+  "think": null,
+  "shots": 3,
+  "n": 200,
+  "accuracy": 0.765,
+  "errors": 0,
+  "truncated": 10,
+  "mean_completion_tokens": 135.375,
+  "mean_latency_s": 3.9982500195503237,
+  "max_tokens": 256,
+  "temperature": 0.0,
+  "seed": 0
+}

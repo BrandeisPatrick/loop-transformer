@@ -1373,3 +1373,22 @@ whether N can be turned down at inference, and the deciding factor is whether in
 supervised during training. Anyone planning to exploit looping for adaptive compute should check for
 per-loop losses before assuming the dial exists. Neither of these one-loop numbers has been published;
 both are measured here.
+
+## 13. Matched baselines: the 1.7B margin is robust, the 4B margin is not
+
+Each looped model's own paper comparator, run through the identical harness (same 200 problems,
+same protocol). Qwen3-4B-Base is the "better base" the Ouro paper also reports against.
+
+| model | stage | params | GSM8K (ours) | paper |
+|---|---|---|---|---|
+| Ouro-1.4B, 4 loops | base | 1.4B | 80.0 ± 2.8 | 78.92 |
+| Qwen3-4B-Base | base | 4.0B | 76.5 ± 3.0 | 72.86 |
+| Qwen3-1.7B-Base | base | 1.7B | 68.0 ± 3.3 | 70.28 |
+
+Both baselines replicate within about four points, and the ordering matches the paper: the looped
+1.4B beats a conventional 4B with under half the parameters. But the two margins are not equally
+solid. Against the 1.7B, Ouro leads by 12.0 under our extractor, 13.5 under `$`-corrected strict
+match, and 8.5 under lm-eval flexible-extract — every rule agrees. Against the 4B it leads by 3.5,
+5.0 and **-1.0** respectively: inside one standard error, and reversed by the scoring rule. The paper
+reports +6.1 on the full test set. The honest statement is that Ouro-1.4B is *at parity with* a
+4B conventional base on GSM8K, and clearly ahead of the size-matched 1.7B.

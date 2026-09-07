@@ -53,5 +53,16 @@
     "flexible": 0.715,
     "dollar_rate": 0.095,
     "as_run": 0.68
+  },
+  {
+    "file": "gsm8k_qwen3-4b-base_3shot.jsonl",
+    "model": "hf.co/mradermacher/Qwen3-4B-Base-GGUF:Q4_K_M",
+    "loops": null,
+    "n": 200,
+    "strict": 0.67,
+    "strict_fixed": 0.74,
+    "flexible": 0.81,
+    "dollar_rate": 0.11,
+    "as_run": 0.765
   }
 ]
