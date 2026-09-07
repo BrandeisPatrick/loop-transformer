@@ -19,7 +19,7 @@ pkill -f "serve/shim.py" 2>/dev/null; sleep 3          # free the Ouro shim's ~3
 for m in $(curl -s -m 5 http://127.0.0.1:11434/api/ps | python3 -c "import sys,json; print(' '.join(x['name'] for x in json.load(sys.stdin).get('models',[])))" 2>/dev/null); do ollama stop "$m"; done
 sleep 5; echo "memory before LoopUS: $(memory_pressure | grep 'free percentage')"
 curl -s -m 3 http://127.0.0.1:11434/api/ps >/dev/null && echo "(ollama up; models unload after keep_alive)"
-scripts/memwait.sh && bash scripts/loopus_smoke.sh
+if [ -n "${SKIP_LOOPUS:-}" ]; then echo "(LoopUS skipped: SKIP_LOOPUS set; its 4 GB bf16 load sits on the memory bound)"; else scripts/memwait.sh && bash scripts/loopus_smoke.sh; fi
 echo "=== $(date '+%H:%M:%S') LoopUS done; MMLU sweep next ==="
 scripts/memwait.sh && TS="4 1" LIMIT=0.03 bash scripts/run_mmlu_sweep.sh
 echo "=== $(date '+%H:%M:%S') phase 2 done ==="
