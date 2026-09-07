@@ -1,8 +1,8 @@
-.env
-.venv/
-.venv-tf4/
-__pycache__/
-*.pyc
 *.log
+*.pyc
+.env
+.venv-tf4/
+.venv/
+__pycache__/
 models/*.gguf
 third_party/
