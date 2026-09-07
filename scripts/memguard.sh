@@ -29,6 +29,10 @@ sweep() {
   log "KILL: $why (free=${F}% swap=${S}MB, base swap ${S0}MB; bounds: free>=${MIN_FREE}%, swap growth<=${SWAP_GROWTH}MB)"
   # Patterns are anchored to the start of the command line so they match only the real
   # processes, never a shell whose command text merely mentions these names.
+  # Model servers first: they hold the weights and KV cache, so killing the client alone frees
+  # almost nothing (observed 2026-09-07: run_eval.py died while llama-server kept ~4.5 GB).
+  pkill -f "build/bin/llama-server" 2>/dev/null && log "  killed llama-server"
+  pkill -f "build/bin/llama-cli" 2>/dev/null && log "  killed llama-cli"
   pkill -f "^[^ ]*python serve/shim.py" 2>/dev/null && log "  killed shim"
   pkill -f "^[^ ]*(python|lm_eval) [^ ]*lm_eval" 2>/dev/null && log "  killed lm_eval"
   pkill -f "^[^ ]*/lm_eval " 2>/dev/null
