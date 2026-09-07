@@ -1392,3 +1392,20 @@ match, and 8.5 under lm-eval flexible-extract — every rule agrees. Against the
 5.0 and **-1.0** respectively: inside one standard error, and reversed by the scoring rule. The paper
 reports +6.1 on the full test set. The honest statement is that Ouro-1.4B is *at parity with* a
 4B conventional base on GSM8K, and clearly ahead of the size-matched 1.7B.
+
+**Nanbeige's comparator (added later).** `qwen3.5:4b`, the model Nanbeige's card compares against, run
+through the same instruct protocol with thinking off: **93.5 ± 1.7** against Nanbeige4.2-3B's
+**91.0 ± 2.0**. The gap is inside one standard error, so the honest reading is parity — and parity is
+itself the finding, because the card's Base-vs-Base table shows Nanbeige ahead of Qwen3.5-4B by 8
+points (92.7 vs 84.4). Whatever advantage looping gives Nanbeige at the base stage is not visible on
+GSM8K after both models are post-trained. (Qwen3.5-4B also writes longer answers, 420 vs 314 tokens
+per item, and is a larger model in total parameters, 5B vs 4.2B, with a vision tower Ollama loads
+alongside.) Combined with §11, the pattern across both families is consistent: looping shows up
+clearly in base-vs-base comparisons and washes out once post-training enters the picture.
+
+| pair | looped | conventional | margin |
+|---|---|---|---|
+| base: Ouro-1.4B vs Qwen3-1.7B-Base | 80.0 | 68.0 | **+12.0** |
+| base: Ouro-1.4B vs Qwen3-4B-Base | 80.0 | 76.5 | +3.5 (not significant) |
+| instruct: Nanbeige4.2-3B vs Qwen3.5-4B | 91.0 | 93.5 | −2.5 (not significant) |
+| instruct: Nanbeige4.2-3B vs Qwen3-1.7B | 91.0 | 82.5 | +8.5 (different size class) |
