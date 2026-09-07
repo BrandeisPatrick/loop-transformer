@@ -53,7 +53,7 @@ STRICT_RE = re.compile(r"The answer is\s*\$?\s*(-?[\d,]*\.?\d+)")
 
 def extract_strict(s):
     m = STRICT_RE.findall(s)
-    return m[-1].replace(",", "") if m else None
+    return m[0].replace(",", "") if m else None   # lm-eval take_first: the model's first stated answer
 
 def ollama_raw(base_url, model, prompt, max_tokens, temperature, extra_body, timeout, stop):
     """Ollama-native /api/generate with raw=true: no chat template applied (faithful few-shot for base models)."""

@@ -164,10 +164,21 @@ class HFBackend:
             for chunk in streamer:
                 if not chunk:
                     continue
+                # Honor stop strings for every backend: emit only up to the first stop occurrence.
+                # Backends with a custom generate (LoopUS) return the whole budget in one chunk, so
+                # without this the text runs past "Q:", invents a new question, and answers it too.
+                if stop:
+                    cand = text + chunk
+                    cuts = [cand.find(s) for s in stop if cand.find(s) >= 0]
+                    if cuts:
+                        cut = min(cuts)
+                        piece = cand[len(text):cut]
+                        if piece:
+                            text += piece
+                            yield piece
+                        break
                 text += chunk
                 yield chunk
-                if stop and any(s in text for s in stop):
-                    break
             t.join()
             n_out = len(self.tok(text, add_special_tokens=False)["input_ids"])
             yield {"prompt_tokens": n_prompt, "completion_tokens": n_out, "elapsed_s": time.time() - t0,
