@@ -1,0 +1,18 @@
+{
+  "benchmark": "gsm8k",
+  "model": "nanbeige4.2:loops1",
+  "extra": {},
+  "mode": "chat",
+  "api": "ollama",
+  "think": "off",
+  "shots": null,
+  "n": 30,
+  "accuracy": 0.0,
+  "errors": 0,
+  "truncated": 30,
+  "mean_completion_tokens": 256.0,
+  "mean_latency_s": 7.087726823488871,
+  "max_tokens": 256,
+  "temperature": 0.0,
+  "seed": 0
+}

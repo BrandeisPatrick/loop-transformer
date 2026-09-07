@@ -1340,3 +1340,36 @@ run here (their published protocol is AIME/OlympiadBench with an unreleased LLM-
 is out of reach on this machine). Any claim of the form "a looped 1.4B beats a 1.7B" must carry the
 stage qualifier, or it is comparing a base model against an instruct model and quietly taking credit
 for the architecture.
+
+## 12. Removing a loop: graceful degradation versus total collapse
+
+Both looped models were forced below their trained depth on the same GSM8K problems. The results are
+not merely different in degree, they are different in kind.
+
+| model | trained depth | forced depth | GSM8K | truncated | s/item |
+|---|---|---|---|---|---|
+| Ouro-1.4B | 4 | 4 | 80.0 | 1% | 38.6 |
+| Ouro-1.4B | 4 | **1** | **23.0** | 11% | 11.1 |
+| Nanbeige4.2-3B | 2 | 2 | 91.0 | 0.5% | 15.7 |
+| Nanbeige4.2-3B | 2 | **1** | **0.0** | **100%** | 7.1 |
+
+Ouro at a quarter of its trained depth still writes clean, well-formed arithmetic — it simply reaches
+wrong conclusions. Nanbeige at half of its trained depth stops being a language model: every one of the
+30 items ran to the token cap without terminating, and a third of the outputs are literal single-word
+repetition (`"step step step step steps steps steps…"`). It is roughly 2.2x faster and completely
+worthless.
+
+The mechanism is visible in the two configs. Ouro trains an entropy-regularized **early-exit gate at
+every recurrent step**, so each step's hidden state is a valid thing to decode from; depth then trades
+smoothly against accuracy. Nanbeige ships `loop_loss_weights=[]` — **no per-loop supervision at all** —
+so only the state after the final loop was ever trained to be read out. Its intermediate state is not a
+shallower model, it is an unfinished computation, and the readout head has never seen it. This is
+exactly the failure predicted by the "readout blind spot" line of work (arXiv 2606.24898), which argues
+that per-loop loss is what makes early exits usable.
+
+The practical consequence: **a looped architecture does not by itself give you a compute dial.** Two
+models that look architecturally similar — shared weights applied N times — differ completely in
+whether N can be turned down at inference, and the deciding factor is whether intermediate depths were
+supervised during training. Anyone planning to exploit looping for adaptive compute should check for
+per-loop losses before assuming the dial exists. Neither of these one-loop numbers has been published;
+both are measured here.
