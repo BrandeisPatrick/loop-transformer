@@ -1,5 +1,7 @@
 ---
 license: apache-2.0
+language:
+  - en
 base_model: ByteDance/Ouro-1.4B
 base_model_relation: quantized
 pipeline_tag: text-generation
@@ -9,7 +11,36 @@ tags:
   - llama.cpp
   - looped-language-model
   - recurrent-depth
+  - universal-transformer
   - ouro
+  - math
+model-index:
+  - name: Ouro-1.4B-GGUF
+    results:
+      - task:
+          type: text-generation
+          name: Math word problems
+        dataset:
+          name: GSM8K (200-problem subset, 3-shot CoT, strict match)
+          type: openai/gsm8k
+          config: main
+          split: test
+        metrics:
+          - name: accuracy (F16, 4 loops)
+            type: accuracy
+            value: 80.5
+          - name: accuracy (Q8_0, 4 loops)
+            type: accuracy
+            value: 79.8
+          - name: accuracy (Q4_K_M, 4 loops)
+            type: accuracy
+            value: 75.0
+          - name: accuracy (F16, 1 loop)
+            type: accuracy
+            value: 26.0
+        source:
+          name: BrandeisPatrick/loop-transformer
+          url: https://github.com/BrandeisPatrick/loop-transformer/blob/main/results/REPORT.md
 ---
 
 # Ouro-1.4B — GGUF
@@ -17,6 +48,15 @@ tags:
 GGUF conversions of [ByteDance/Ouro-1.4B](https://huggingface.co/ByteDance/Ouro-1.4B), a **looped
 language model**: the entire 24-layer decoder stack is applied 4 times per token with shared weights,
 so a 1.4B-parameter model computes at an effective depth of 96 layers.
+
+## What this repository is, and is not
+
+| | |
+|---|---|
+| **Model weights** | ByteDance Seed's, unchanged. Trained by them, licensed Apache-2.0 by them. Nothing here was fine-tuned. |
+| **What was added** | The `ouro` **architecture for llama.cpp** — the graph, the HF→GGUF conversion, and the registration — so the weights can be loaded by GGUF runtimes at all. Plus these conversions and their measured accuracy. |
+| **Upstream status** | Submitted as a llama.cpp pull request from the `ouro-arch` branch of [BrandeisPatrick/loop-transformer](https://github.com/BrandeisPatrick/loop-transformer). Until it merges, these files need the patched build linked below. |
+| **Credit** | If you use the model, cite ByteDance's paper (below). If you use the port or the evaluation harness, link the GitHub repository. |
 
 These are the first GGUFs of this architecture. llama.cpp had no `ouro` architecture, so no GGUF
 runtime could load Ouro at all — the request on the Ollama tracker
