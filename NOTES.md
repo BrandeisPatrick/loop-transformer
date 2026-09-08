@@ -1508,3 +1508,22 @@ llama-cli -m Ouro-1.4B-F16.gguf --override-kv ouro.num_loops=int:4   # 96 layers
 changes the loop depth of an existing GGUF at load time, with no reconversion and no extra disk. The
 compute dial that produced §10's curve therefore reaches end users through a single file — and reaches
 Ollama through a Modelfile parameter rather than four separate model downloads.
+
+### Quantization: a real cost, but it does not compound with depth
+
+Q4_K_M shrinks Ouro-1.4B from 2.7 GB to 854 MB and runs 2.5x faster, at a real accuracy cost:
+
+| depth | F16 | Q4_K_M | penalty |
+|---|---|---|---|
+| 1 | 26.0 (n=100) | 20.0 (n=100) | 6.0 ± 5.9 |
+| 4 | 80.5 (n=200) | 75.0 (n=100) | 5.5 ± 5.2 |
+
+Five to six points is more than the one to two a dense model this size usually loses, which suggested
+an appealing hypothesis: a looped model passes through the *same* quantized weights once per loop, so
+weight error might compound with depth. **It does not.** The penalty at depth 4 minus the penalty at
+depth 1 is −0.5 points against a combined standard error of 7.9 — no effect, and if anything the sign
+is backwards. The cost is a flat property of quantizing this model, not something the loop amplifies.
+
+Practical consequence: quantize looped models by the same rules as any other model, but prefer Q8_0 or
+F16 over Q4_K_M when accuracy matters here, and quote the depth alongside any quantized number, since
+the same file scores 20.0 or 75.0 depending only on a load-time flag.
