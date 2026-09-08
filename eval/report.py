@@ -58,6 +58,30 @@ def main():
                    "\"The answer is N\" and is scored wrong. The last column removes those, separating "
                    "\"reasoned badly\" from \"never finished\".")
         out.append("\nThe paper only reports GSM8K at T=4 (78.92); its per-step ablation is on MMLU (41.21 / 60.43 / 66.71 / 67.45 at T=1..4).")
+    # llama.cpp port: same protocol, same subset, against the transformers anchors
+    lc = []
+    for f in sorted(glob.glob(os.path.join(ROOT, "results", "gsm8k_ouro-1.4b_llamacpp_*.jsonl"))):
+        recs = {}
+        for line in open(f):
+            if line.strip():
+                r = json.loads(line); recs[r["id"]] = r
+        rr = list(recs.values())
+        if not rr:
+            continue
+        m = re.search(r"_L(\d)\.jsonl$", f)
+        depth = int(m.group(1)) if m else 4
+        ok = sum(1 for r in rr if r.get("correct"))
+        lc.append((depth, ok / len(rr), len(rr), sum(r.get("latency_s", 0) for r in rr) / len(rr)))
+    if lc:
+        ref = {1: (23.0, 11.1), 2: (64.0, 19.3), 3: (72.0, 28.2), 4: (80.0, 38.6)}
+        out.append("\n## The llama.cpp port, against the transformers reference\n")
+        out.append("Same 3-shot protocol and same problems, F16 GGUF on Metal vs bf16 transformers on MPS. "
+                   "Depth is set at load time with `--override-kv ouro.num_loops=int:N` from a single file.\n")
+        out.append("| loops | llama.cpp | transformers | n | s/item (llama.cpp) | s/item (transformers) | speedup |\n|---|---|---|---|---|---|---|")
+        for d, a, n, lat in sorted(lc):
+            ra, rlat = ref.get(d, (None, None))
+            sp = f"{rlat/lat:.1f}x" if rlat and lat else "—"
+            out.append(f"| {d} | **{100*a:.1f}** | {ra if ra else '—'} | {n} | {lat:.1f} | {rlat if rlat else '—'} | {sp} |")
     # MMLU depth sweep from lm-eval outputs (results/mmlu/ouro-1.4b_T*/.../results_*.json)
     mm = []
     for f in sorted(glob.glob(os.path.join(ROOT, "results", "mmlu", "ouro-1.4b_T*", "**", "results_*.json"), recursive=True)):

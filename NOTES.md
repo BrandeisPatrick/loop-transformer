@@ -1442,3 +1442,69 @@ Put next to §10, the two curves for the same weights on the same machine:
 Same model, same depths, and math takes nearly twice as much from the last doubling of compute as
 knowledge does. Since the MMLU curve reproduces the paper, the GSM8K curve — which the paper never
 published — can be read with the same confidence.
+
+## 15. Porting Ouro to llama.cpp
+
+Ouro could not run in Ollama, LM Studio, or any other GGUF runtime, because llama.cpp had no `ouro`
+architecture — the Ollama request for it ([#14252](https://github.com/ollama/ollama/issues/14252)) had
+sat unanswered since February 2026. This adds one.
+
+**The mechanism was already there.** llama.cpp gained looped-model machinery when Nanbeige4.2 was
+merged in July 2026: a generic `{arch}.num_loops` GGUF key, an unroll to `n_layer_phys × n_loops`
+logical layers, and weight sharing across loop slots with an independent KV index per slot. Ouro's
+cache index is `current_ut * num_hidden_layers + layer_idx`, which is exactly the unrolled logical
+layer index, so the whole loop mechanism transfers unchanged.
+
+**What did not transfer** is the block body. Nanbeige uses a Llama block; Ouro uses a Gemma-style
+**sandwich norm** with four RMSNorms per layer, two of them normalising the sublayer *output* before
+the residual add:
+
+```python
+h = x + input_layernorm_2(attn(input_layernorm(x)))                    # modeling_ouro.py:401-422
+h = h + post_attention_layernorm_2(mlp(post_attention_layernorm(h)))
+```
+
+These map onto llama.cpp's existing `ATTN_POST_NORM` / `FFN_POST_NORM` tensors, so no new ggml op and
+no new tensor type was needed. There is a **name trap** here worth recording: Ouro's
+`post_attention_layernorm` is the *pre-FFN* norm (Llama convention), but the generic tensor map reads
+that name as the *post-attention* norm because that is what it means for gemma2 and olmo2. Relying on
+the generic map would silently wire two norms to the wrong places, so the conversion maps all four
+explicitly.
+
+**The between-loop norm** needed no new code either. Ouro applies its shared final norm at the end of
+every loop, and the normed state feeds the next loop — which is exactly Nanbeige's
+`skip_loop_final_norm = false` schedule.
+
+**The early-exit gate is dropped.** It selects which already-computed loop feeds the LM head rather
+than changing what is computed, and at the shipped `early_exit_threshold = 1.0` it never fires:
+independent verification measured 0 of 299 token positions exiting early, with a maximum gate logit of
+0.504 against roughly the 7 a bf16 sigmoid would need. The conversion warns if a checkpoint ever ships
+a lower threshold, since then the fixed-depth graph would not match.
+
+### Validation
+
+Checked against anchors measured in this repo with the reference implementation *before* the port
+existed, so the port is compared to numbers rather than impressions.
+
+| loops | llama.cpp F16 | transformers bf16 | n | s/item | speedup |
+|---|---|---|---|---|---|
+| 1 | 26.0 | 23.0 | 100 | 2.4 | 4.6x |
+| 2 | 67.0 | 64.0 | 100 | ~6 | ~3x |
+| 4 | **80.5 ± 2.8** | **80.0 ± 2.8** | 200 | 11.3 | 3.4x |
+
+Every depth is within one standard error, and greedy output is token-identical to the reference on the
+smoke prompt. The model loads as `n_layer = 96` at `1.43 B` parameters — logical depth expanded,
+weights shared exactly once.
+
+### The depth dial survives into llama.cpp
+
+`llama_model_loader::get_key` consults `kv_overrides` before the file, so
+
+```bash
+llama-cli -m Ouro-1.4B-F16.gguf --override-kv ouro.num_loops=int:1   # 24 layers, 36.5 tok/s
+llama-cli -m Ouro-1.4B-F16.gguf --override-kv ouro.num_loops=int:4   # 96 layers,  9.5 tok/s
+```
+
+changes the loop depth of an existing GGUF at load time, with no reconversion and no extra disk. The
+compute dial that produced §10's curve therefore reaches end users through a single file — and reaches
+Ollama through a Modelfile parameter rather than four separate model downloads.
