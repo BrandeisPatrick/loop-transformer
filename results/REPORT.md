@@ -12,7 +12,11 @@ Local numbers are on a fixed 200-problem subset (seed 0) unless n says otherwise
 | gsm8k_ouro-1.4b_3shot_T3 | ouro-1.4b | 3 | 100 | **72.0** ± 4.5 | — | 0 | 0 | 28.2 | 104 | done |
 | gsm8k_ouro-1.4b_3shot_T4 | ouro-1.4b | 4 | 200 | **80.0** ± 2.8 | 78.9 | 2 | 0 | 38.6 | 106 | done |
 | gsm8k_ouro-1.4b_llamacpp_F16_T4 | ouro-1.4b-gguf |  | 200 | **80.5** ± 2.8 | — | 2 | 0 | 11.3 | 106 | done |
-| gsm8k_ouro-1.4b_llamacpp_L1 | ouro-gguf-L1 |  | 6 | **0.0** ± 0.0 | — | 0 | 0 | 1.9 | 66 | running |
+| gsm8k_ouro-1.4b_llamacpp_L1 | ouro-gguf-L1 |  | 100 | **26.0** ± 4.4 | — | 13 | 0 | 2.4 | 88 | done |
+| gsm8k_ouro-1.4b_llamacpp_L2 | ouro-gguf-L2 |  | 100 | **67.0** ± 4.7 | — | 0 | 0 | 5.5 | 102 | done |
+| gsm8k_ouro-1.4b_llamacpp_Q4KM_L1 | ouro-q4-L1 |  | 100 | **20.0** ± 4.0 | — | 10 | 0 | 0.9 | 77 | done |
+| gsm8k_ouro-1.4b_llamacpp_Q4KM_L4 | ouro-1.4b-q4 |  | 100 | **75.0** ± 4.3 | — | 0 | 0 | 4.5 | 102 | done |
+| gsm8k_ouro-1.4b_llamacpp_Q8_L4 | ouro-q8 |  | 99 | **79.8** ± 4.0 | — | 0 | 0 | 7.3 | 102 | running |
 | gsm8k_qwen3-1.7b-base_3shot | hf.co/mradermacher/Qwen3-1.7B-Base-GGUF: |  | 200 | **68.0** ± 3.3 | 70.3 | 17 | 0 | 2.9 | 133 | done |
 | gsm8k_qwen3-1.7b_nothink | qwen3:1.7b |  | 200 | **82.5** ± 2.7 | — | 1 | 0 | 4.2 | 292 | done |
 | gsm8k_qwen3-4b-base_3shot | hf.co/mradermacher/Qwen3-4B-Base-GGUF:Q4 |  | 200 | **76.5** ± 3.0 | 72.9 | 10 | 0 | 4.0 | 135 | done |
@@ -50,7 +54,11 @@ Same 3-shot protocol and same problems, F16 GGUF on Metal vs bf16 transformers o
 
 | loops | llama.cpp | transformers | n | s/item (llama.cpp) | s/item (transformers) | speedup |
 |---|---|---|---|---|---|---|
-| 1 | **0.0** | 23.0 | 6 | 1.9 | 11.1 | 5.8x |
+| 1 | **20.0** | 23.0 | 100 | 0.9 | 11.1 | 11.8x |
+| 1 | **26.0** | 23.0 | 100 | 2.4 | 11.1 | 4.5x |
+| 2 | **67.0** | 64.0 | 100 | 5.5 | 19.3 | 3.5x |
+| 4 | **75.0** | 80.0 | 100 | 4.5 | 38.6 | 8.6x |
+| 4 | **79.8** | 80.0 | 99 | 7.3 | 38.6 | 5.3x |
 | 4 | **80.5** | 80.0 | 200 | 11.3 | 38.6 | 3.4x |
 
 ## Ouro-1.4B: MMLU 5-shot vs recurrent steps (lm-eval, the paper's published ablation)
