@@ -1,4 +1,4 @@
-From 2e3ef1459e6cc22797fd16171a7f93c49c5926fc Mon Sep 17 00:00:00 2001
+From 2a40d08a6b0fad134f4e1795e70700f3a729abf1 Mon Sep 17 00:00:00 2001
 From: BrandeisPatrick <kokomo31ads@gmail.com>
 Date: Mon, 7 Sep 2026 19:17:43 -0400
 Subject: [PATCH] model: add Ouro (looped / universal-transformer LM)
@@ -36,10 +36,10 @@ params, and greedy output is token-identical to the transformers reference.
  create mode 100644 src/models/ouro.cpp
 
 diff --git a/conversion/__init__.py b/conversion/__init__.py
-index 4d58bcd..b68cbda 100644
+index f966373..1459843 100644
 --- a/conversion/__init__.py
 +++ b/conversion/__init__.py
-@@ -187,6 +187,7 @@ TEXT_MODEL_MAP: dict[str, str] = {
+@@ -190,6 +190,7 @@ TEXT_MODEL_MAP: dict[str, str] = {
      "ModernBertForSequenceClassification": "bert",
      "ModernBertModel": "bert",
      "NanbeigeForCausalLM": "nanbeige",
@@ -125,10 +125,10 @@ index 0000000..0ea7451
 +
 +        return super().modify_tensors(data_torch, name, bid)
 diff --git a/gguf-py/gguf/constants.py b/gguf-py/gguf/constants.py
-index d3a639f..f10d65d 100644
+index 27c8351..1edb6b4 100644
 --- a/gguf-py/gguf/constants.py
 +++ b/gguf-py/gguf/constants.py
-@@ -628,6 +628,7 @@ class MODEL_ARCH(IntEnum):
+@@ -636,6 +636,7 @@ class MODEL_ARCH(IntEnum):
      TALKIE           = auto()
      MELLUM           = auto()
      NANBEIGE         = auto()
@@ -136,7 +136,7 @@ index d3a639f..f10d65d 100644
      QWEN3TTS         = auto()
      POCKETTTS        = auto()
  
-@@ -1383,6 +1384,7 @@ MODEL_ARCH_NAMES: dict[MODEL_ARCH, str] = {
+@@ -1394,6 +1395,7 @@ MODEL_ARCH_NAMES: dict[MODEL_ARCH, str] = {
      MODEL_ARCH.TALKIE:           "talkie",
      MODEL_ARCH.MELLUM:           "mellum",
      MODEL_ARCH.NANBEIGE:         "nanbeige",
@@ -144,7 +144,7 @@ index d3a639f..f10d65d 100644
      MODEL_ARCH.QWEN3TTS:         "qwen3tts",
      MODEL_ARCH.POCKETTTS:        "pockettts",
  }
-@@ -5500,6 +5502,22 @@ MODEL_TENSORS: dict[MODEL_ARCH, list[MODEL_TENSOR]] = {
+@@ -5547,6 +5549,22 @@ MODEL_TENSORS: dict[MODEL_ARCH, list[MODEL_TENSOR]] = {
          MODEL_TENSOR.FFN_DOWN,
          MODEL_TENSOR.FFN_UP,
      ],
@@ -168,10 +168,10 @@ index d3a639f..f10d65d 100644
          MODEL_TENSOR.TOKEN_EMBD,
          MODEL_TENSOR.OUTPUT_NORM,
 diff --git a/src/llama-arch.cpp b/src/llama-arch.cpp
-index 15f6519..89ff436 100644
+index 03b7951..7006b24 100644
 --- a/src/llama-arch.cpp
 +++ b/src/llama-arch.cpp
-@@ -154,6 +154,7 @@ static const std::map<llm_arch, const char *> LLM_ARCH_NAMES = {
+@@ -156,6 +156,7 @@ static const std::map<llm_arch, const char *> LLM_ARCH_NAMES = {
      { LLM_ARCH_TALKIE,           "talkie"           },
      { LLM_ARCH_MELLUM,           "mellum"           },
      { LLM_ARCH_NANBEIGE,         "nanbeige"         },
@@ -180,10 +180,10 @@ index 15f6519..89ff436 100644
      { LLM_ARCH_POCKETTTS,        "pockettts"        },
      { LLM_ARCH_UNKNOWN,          "(unknown)"        },
 diff --git a/src/llama-arch.h b/src/llama-arch.h
-index f1d173a..1e0a897 100644
+index af64f4e..0618069 100644
 --- a/src/llama-arch.h
 +++ b/src/llama-arch.h
-@@ -158,6 +158,7 @@ enum llm_arch {
+@@ -159,6 +159,7 @@ enum llm_arch {
      LLM_ARCH_MINIMAX_M3,
      LLM_ARCH_DFLASH,
      LLM_ARCH_NANBEIGE,
@@ -192,10 +192,10 @@ index f1d173a..1e0a897 100644
      LLM_ARCH_POCKETTTS,
      LLM_ARCH_MINIMAX_01,
 diff --git a/src/llama-context.cpp b/src/llama-context.cpp
-index c1ef12f..c6ac9d2 100644
+index fcd4dfb..601db9b 100644
 --- a/src/llama-context.cpp
 +++ b/src/llama-context.cpp
-@@ -2316,6 +2316,7 @@ uint32_t llama_context::graph_max_nodes(uint32_t n_tokens) const {
+@@ -2379,6 +2379,7 @@ uint32_t llama_context::graph_max_nodes(uint32_t n_tokens) const {
          model.arch == LLM_ARCH_DEEPSEEK4 ||
          (model.arch == LLM_ARCH_DFLASH && model.hparams.dsv4_hc_mult > 0) ||
          model.arch == LLM_ARCH_NANBEIGE ||
@@ -204,7 +204,7 @@ index c1ef12f..c6ac9d2 100644
          model.arch == LLM_ARCH_MINIMAX_M3 ||
          model.arch == LLM_ARCH_HY_V4) {
 diff --git a/src/llama-model.cpp b/src/llama-model.cpp
-index ffedf89..a682708 100644
+index e195f50..632b8c8 100644
 --- a/src/llama-model.cpp
 +++ b/src/llama-model.cpp
 @@ -92,6 +92,8 @@ static llama_model * llama_model_mapping(llm_arch arch, const llama_model_params
@@ -216,7 +216,7 @@ index ffedf89..a682708 100644
          case LLM_ARCH_QWEN:
              return new llama_model_qwen(params);
          case LLM_ARCH_QWEN2:
-@@ -2927,6 +2929,7 @@ llama_rope_type llama_model_rope_type(const llama_model * model) {
+@@ -2969,6 +2971,7 @@ llama_rope_type llama_model_rope_type(const llama_model * model) {
          case LLM_ARCH_GLM_DSA:
          case LLM_ARCH_DOTS3NOTE:
          case LLM_ARCH_NANBEIGE:
@@ -225,7 +225,7 @@ index ffedf89..a682708 100644
          // HY_V4 rotates consecutive pairs, matching the reference implementation
          case LLM_ARCH_HY_V4:
 diff --git a/src/models/models.h b/src/models/models.h
-index 87195fd..eec7858 100644
+index 3f9c67c..d68e41c 100644
 --- a/src/models/models.h
 +++ b/src/models/models.h
 @@ -466,6 +466,21 @@ struct llama_model_nanbeige : public llama_model_base {
