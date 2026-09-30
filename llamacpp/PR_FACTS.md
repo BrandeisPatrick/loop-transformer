@@ -41,7 +41,7 @@ Keep the Requirements section; deleting it can get the PR rejected.
 - `LLM_ARCH_OURO` added to the larger graph-node budget list in `llama-context.cpp`
   (same treatment as other deep-graph archs).
 
-## Files changed (from `git diff --stat 67672dc ouro-arch`)
+## Files changed (from `git diff --stat ouro-arch~1 ouro-arch`, base is upstream `bd4f514`)
 
 | file | lines | what |
 |---|---|---|
@@ -72,8 +72,10 @@ GSM8K 3-shot, same problems and prompt, F16 GGUF on Metal vs bf16 transformers o
 Every depth is within one standard error. Quantized, 4 loops: Q8_0 79.8 (n = 99), Q4_K_M 75.0 (n = 100).
 Paper reports 78.92 for Ouro-1.4B on full GSM8K.
 
-`tests/test-llama-archs` passes with `ouro` included (exit 0, 0 failures):
-Metal / Apple M4 8.51e-08, Accelerate 1.39e-15, CPU 8.62e-14. Meta backend SKIP is normal.
+`tests/test-llama-archs` passes with `ouro` included, re-run on 2026-09-30 after rebasing onto
+upstream `bd4f514`: exit 0, "all 502 test(s) passed". The three `ouro` backend rows report
+1.47e-07, 2.27e-13 and 1.98e-13 (Apple M4, Accelerate, Apple M4). The Meta row is SKIP, as it is
+for every architecture. Built with Apple clang 21 from the Command Line Tools.
 
 Decode speed, F16, M4 16 GB Metal: 36.5 tok/s at 1 loop, 9.5 tok/s at 4 loops.
 
@@ -99,8 +101,8 @@ Decode speed, F16, M4 16 GB Metal: 36.5 tok/s at 1 loop, 9.5 tok/s at 4 loops.
 
 ## Process rules from AGENTS.md that affect the next steps
 
-- Commit message: you write it. If the agent amends the commit for you, it must add an
-  `Assisted-by: Claude Code` trailer (AGENTS.md line 92), not `Co-authored-by`.
+- Commit message: you write it and you amend the commit yourself with `git commit --amend`
+  inside `third_party/llama.cpp`.
 - Push and PR creation must be done by you (AGENTS.md line 95). Commands:
 
 ```bash
