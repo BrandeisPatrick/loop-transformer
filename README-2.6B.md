@@ -45,7 +45,7 @@ Being precise, because this variant was not benchmarked end-to-end:
 `2.67 B` parameters — depth expanded, weights stored once — and generates correct, coherent output
 (~8.3 tok/s on an Apple M4, Q8_0).
 
-**Verified on the same code path, using the smaller [Ouro-1.4B](https://huggingface.co/BrandiesPatrick/Ouro-1.4B-GGUF).**
+**Verified on the same code path, using the smaller [Ouro-1.4B](https://huggingface.co/BrandeisPatrick/Ouro-1.4B-GGUF).**
 The port reproduces the transformers reference across loop depths: 26.0 / 67.0 / 80.5 percent on GSM8K
 at 1 / 2 / 4 loops against 23.0 / 64.0 / 80.0, every point within one standard error, with
 token-identical greedy output. That is the evidence the architecture is correct.

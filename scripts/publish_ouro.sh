@@ -2,7 +2,7 @@
 # End-to-end: HF checkpoint -> GGUF -> quants -> validate -> upload to a Hugging Face repo.
 # Deletes the source snapshot right after conversion and the F16 right after quantising, so the
 # peak disk need is roughly (snapshot + F16) rather than the sum of everything.
-#   usage: scripts/publish_ouro.sh ByteDance/Ouro-2.6B-Thinking BrandiesPatrick/Ouro-2.6B-Thinking-GGUF
+#   usage: scripts/publish_ouro.sh ByteDance/Ouro-2.6B-Thinking BrandeisPatrick/Ouro-2.6B-Thinking-GGUF
 set -u
 cd "$(dirname "$0")/.."
 SRC="$1"; DEST="$2"; NAME=$(basename "$SRC")

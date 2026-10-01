@@ -83,8 +83,8 @@ Decode speed, F16, M4 16 GB Metal: 36.5 tok/s at 1 loop, 9.5 tok/s at 4 loops.
 
 - Ollama request for Ouro, open since Feb 2026: ollama/ollama#14252
 - Looped-model mechanism this reuses: ggml-org/llama.cpp#25994 (Nanbeige4.2)
-- Converted GGUFs already published: `BrandiesPatrick/Ouro-1.4B-GGUF`, `BrandiesPatrick/Ouro-2.6B-GGUF`,
-  `BrandiesPatrick/Ouro-1.4B-Thinking-GGUF`, `BrandiesPatrick/Ouro-2.6B-Thinking-GGUF`
+- Converted GGUFs already published: `BrandeisPatrick/Ouro-1.4B-GGUF`, `BrandeisPatrick/Ouro-2.6B-GGUF`,
+  `BrandeisPatrick/Ouro-1.4B-Thinking-GGUF`, `BrandeisPatrick/Ouro-2.6B-Thinking-GGUF`
 - Eval harness and full write-up: https://github.com/BrandeisPatrick/loop-transformer (make public first)
 - Disclosure wording you liked: ggml-org/llama.cpp#27591
 

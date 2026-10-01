@@ -46,14 +46,14 @@ Being precise, because this variant was not benchmarked end-to-end:
 `1.43 B` parameters — depth expanded, weights stored once — and answers correctly. Verification gated
 the upload: these files were published only after passing it.
 
-**Verified on the same code path, using the base [Ouro-1.4B](https://huggingface.co/BrandiesPatrick/Ouro-1.4B-GGUF).**
+**Verified on the same code path, using the base [Ouro-1.4B](https://huggingface.co/BrandeisPatrick/Ouro-1.4B-GGUF).**
 The port reproduces the transformers reference across loop depths: 26.0 / 67.0 / 80.5 percent on GSM8K
 at 1 / 2 / 4 loops against 23.0 / 64.0 / 80.0, every point within one standard error, with
 token-identical greedy output. That is the evidence the architecture is correct.
 
 **Not verified here.** This model's published numbers (AIME24/25, OlympiadBench, BeyondAIME) are scored
 with an unreleased LLM-as-judge rubric, so they cannot be reproduced independently and no accuracy
-figure for this variant is claimed. If you need a benchmarked file, use the non-thinking [Ouro-1.4B](https://huggingface.co/BrandiesPatrick/Ouro-1.4B-GGUF).
+figure for this variant is claimed. If you need a benchmarked file, use the non-thinking [Ouro-1.4B](https://huggingface.co/BrandeisPatrick/Ouro-1.4B-GGUF).
 
 ## The loop count is a runtime dial
 
