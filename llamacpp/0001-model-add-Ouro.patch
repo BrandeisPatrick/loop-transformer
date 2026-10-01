@@ -1,6 +1,6 @@
-From 00b21d9e030e7a726c824c0f8ed668e53f37f8dc Mon Sep 17 00:00:00 2001
-From: BrandeisPatrick <kokomo31ads@gmail.com>
-Date: Mon, 7 Sep 2026 19:17:43 -0400
+From 68e260b795bcec8ab3bbf86cbc7ee3d19c369fc2 Mon Sep 17 00:00:00 2001
+From: Bat <59629055+BrandeisPatrick@users.noreply.github.com>
+Date: Thu, 1 Oct 2026 14:46:29 -0400
 Subject: [PATCH] model : add support for Ouro (ByteDance looped LM)
 
 ---
