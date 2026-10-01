@@ -81,6 +81,10 @@ Other checkpoints, smoke check only (Q4_K_M, prompt "What is 17 + 26?", expected
 Ouro-1.4B-Thinking passed, Ouro-2.6B-Thinking passed on 2026-09-30 using the rebased build (it needs a
 token budget of a few hundred because it reasons before answering). No benchmark was run on these three.
 
+Smoke prompt ("What is 17 + 26?", greedy), all four variants answer 43: Ouro-1.4B (full eval above),
+Ouro-1.4B-Thinking and Ouro-2.6B (publish gate, 2026-09-07), Ouro-2.6B-Thinking Q4_K_M (re-checked
+2026-09-30 on the rebased build, 13.3 tok/s, minimum free memory 49%). Only 1.4B has benchmark numbers.
+
 Decode speed, F16, M4 16 GB Metal: 36.5 tok/s at 1 loop, 9.5 tok/s at 4 loops.
 
 ## Additional information: links
