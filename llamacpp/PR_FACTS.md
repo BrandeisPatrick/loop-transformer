@@ -1,5 +1,7 @@
 # Facts for the upstream llama.cpp PR (write the prose yourself)
 
+**Status: opened as [ggml-org/llama.cpp#29823](https://github.com/ggml-org/llama.cpp/pull/29823) on 2026-10-01.**
+
 llama.cpp forbids AI-written PR descriptions, commit messages, and reviewer replies
 (CONTRIBUTING.md item 5; AGENTS.md "Prohibited AI Usage"). This file is a checked list of
 facts, numbers, and links. Every sentence in the PR must be yours.
@@ -41,7 +43,7 @@ Keep the Requirements section; deleting it can get the PR rejected.
 - `LLM_ARCH_OURO` added to the larger graph-node budget list in `llama-context.cpp`
   (same treatment as other deep-graph archs).
 
-## Files changed (from `git diff --stat ouro-arch~1 ouro-arch`, base is upstream `bd4f514`)
+## Files changed (from `git diff --stat ouro-arch~1 ouro-arch`, base is upstream `f1cee99`)
 
 | file | lines | what |
 |---|---|---|
@@ -72,10 +74,12 @@ GSM8K 3-shot, same problems and prompt, F16 GGUF on Metal vs bf16 transformers o
 Every depth is within one standard error. Quantized, 4 loops: Q8_0 79.8 (n = 99), Q4_K_M 75.0 (n = 100).
 Paper reports 78.92 for Ouro-1.4B on full GSM8K.
 
-`tests/test-llama-archs` passes with `ouro` included, re-run on 2026-09-30 after rebasing onto
-upstream `bd4f514`: exit 0, "all 502 test(s) passed". The three `ouro` backend rows report
-1.47e-07, 2.27e-13 and 1.98e-13 (Apple M4, Accelerate, Apple M4). The Meta row is SKIP, as it is
-for every architecture. Built with Apple clang 21 from the Command Line Tools.
+`tests/test-llama-archs` passes with `ouro` included, re-run on 2026-10-01 after rebasing onto
+upstream `f1cee99`: exit 0, "all 506 test(s) passed". The three `ouro` backend rows report
+1.60e-07, 1.72e-13 and 2.44e-13 (Apple M4, Accelerate, Apple M4). The Meta row is SKIP, as it is
+for every architecture. Built with Apple clang 21 from the Command Line Tools. On the same build the
+published Ouro-1.4B Q4_K_M file loads as `arch = ouro`, `n_layer = 96`, 1.43 B params and answers the
+smoke prompt correctly.
 
 Other checkpoints, smoke check only (Q4_K_M, prompt "What is 17 + 26?", expected 43): Ouro-2.6B passed,
 Ouro-1.4B-Thinking passed, Ouro-2.6B-Thinking passed on 2026-09-30 using the rebased build (it needs a

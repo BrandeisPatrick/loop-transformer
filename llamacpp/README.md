@@ -60,13 +60,14 @@ port existed, so the port is checked against a number, not against an impression
 
 - `ouro.cpp` → `src/models/ouro.cpp`, the graph
 - `ouro.py` → `conversion/ouro.py`, the HF→GGUF conversion
-- `0001-model-add-Ouro.patch` — the whole change, including registration, against upstream `67672dc`
+- `0001-model-add-Ouro.patch` — the whole change, including registration, against upstream `f1cee99`
 - `build.sh`, `convert.sh`
 
 ## Upstreaming
 
-The patch is intended for a PR to ggml-org/llama.cpp. Note that llama.cpp closed the last looped-model
-contribution ([PR #18680](https://github.com/ggml-org/llama.cpp/pull/18680), IQuest-Coder) over
-undisclosed AI-generated code, so any PR from this work must disclose AI assistance up front.
-Once merged and Ollama bumps its llama.cpp pin, `ollama run hf.co/<user>/Ouro-1.4B-GGUF` works with no
-Go-side change.
+Submitted upstream as [ggml-org/llama.cpp#29823](https://github.com/ggml-org/llama.cpp/pull/29823) (opened 2026-10-01, one commit, nine files).
+
+llama.cpp closed the previous looped-model contribution
+([PR #18680](https://github.com/ggml-org/llama.cpp/pull/18680), IQuest-Coder) for not following its
+contribution guidelines on AI-generated code, so this PR discloses AI assistance up front, in the
+description and in the commit trailers.

@@ -55,7 +55,7 @@ so a 1.4B-parameter model computes at an effective depth of 96 layers.
 |---|---|
 | **Model weights** | ByteDance Seed's, unchanged. Trained by them, licensed Apache-2.0 by them. Nothing here was fine-tuned. |
 | **What was added** | The `ouro` **architecture for llama.cpp** — the graph, the HF→GGUF conversion, and the registration — so the weights can be loaded by GGUF runtimes at all. Plus these conversions and their measured accuracy. |
-| **Upstream status** | Submitted as a llama.cpp pull request from the `ouro-arch` branch of [BrandeisPatrick/loop-transformer](https://github.com/BrandeisPatrick/loop-transformer). Until it merges, these files need the patched build linked below. |
+| **Upstream status** | Submitted upstream as [ggml-org/llama.cpp#29823](https://github.com/ggml-org/llama.cpp/pull/29823). Until it merges, these files need the patched build linked below. |
 | **Credit** | If you use the model, cite ByteDance's paper (below). If you use the port or the evaluation harness, link the GitHub repository. |
 
 These are the first GGUFs of this architecture. llama.cpp had no `ouro` architecture, so no GGUF
