@@ -71,3 +71,6 @@ llama.cpp closed the previous looped-model contribution
 ([PR #18680](https://github.com/ggml-org/llama.cpp/pull/18680), IQuest-Coder) for not following its
 contribution guidelines on AI-generated code, so this PR discloses AI assistance up front, in the
 description and in the commit trailers.
+
+Once it merges and Ollama bumps its llama.cpp pin, `ollama run hf.co/BrandeisPatrick/Ouro-1.4B-GGUF`
+works with no Go-side change.

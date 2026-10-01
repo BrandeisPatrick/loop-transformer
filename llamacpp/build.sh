@@ -4,7 +4,7 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 DEST="${1:-$HERE/../third_party/llama.cpp}"
-BASE=67672dc5b76f8bc17785a19d3dc6d1463fc2902c   # upstream master at time of writing
+BASE=f1cee9941b0e843ea260bf8dd9a090fbd9711b6a   # upstream master the patch applies to (2026-10-01)
 
 if [ ! -d "$DEST/.git" ]; then
   echo "==> cloning llama.cpp into $DEST"
