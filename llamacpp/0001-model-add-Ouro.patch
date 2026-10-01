@@ -1,26 +1,8 @@
-From 2a40d08a6b0fad134f4e1795e70700f3a729abf1 Mon Sep 17 00:00:00 2001
+From 00b21d9e030e7a726c824c0f8ed668e53f37f8dc Mon Sep 17 00:00:00 2001
 From: BrandeisPatrick <kokomo31ads@gmail.com>
 Date: Mon, 7 Sep 2026 19:17:43 -0400
-Subject: [PATCH] model: add Ouro (looped / universal-transformer LM)
+Subject: [PATCH] model : add support for Ouro (ByteDance looped LM)
 
-Ouro (ByteDance Seed, arXiv 2510.25741) applies its whole decoder stack num_loops
-times per token with shared weights, caching K/V per (loop, layer). That is the
-unroll already used for nanbeige, so this reuses the generic {arch}.num_loops key:
-expand to n_layer_phys * n_loops logical layers, share the physical weights, and
-give each logical layer its own KV index.
-
-Two things differ from nanbeige. Ouro's block uses sandwich norms -- a norm on the
-attention output and on the FFN output, before each residual add -- which map onto
-the existing ATTN_POST_NORM / FFN_POST_NORM tensors. And its HF norm names collide
-with the generic map (post_attention_layernorm is the PRE-FFN norm here, Llama
-convention), so the conversion maps the four norms explicitly.
-
-The early-exit gate is not converted: it only selects which already-computed loop
-to read out and never changes what is computed, so a fixed-depth graph matches the
-reference.
-
-Tested on Apple M4 (Metal), Ouro-1.4B F16: loads as 96 logical layers / 1.43B
-params, and greedy output is token-identical to the transformers reference.
 ---
  conversion/__init__.py    |   1 +
  conversion/ouro.py        |  71 +++++++++++++
