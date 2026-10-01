@@ -77,6 +77,10 @@ upstream `bd4f514`: exit 0, "all 502 test(s) passed". The three `ouro` backend r
 1.47e-07, 2.27e-13 and 1.98e-13 (Apple M4, Accelerate, Apple M4). The Meta row is SKIP, as it is
 for every architecture. Built with Apple clang 21 from the Command Line Tools.
 
+Other checkpoints, smoke check only (Q4_K_M, prompt "What is 17 + 26?", expected 43): Ouro-2.6B passed,
+Ouro-1.4B-Thinking passed, Ouro-2.6B-Thinking passed on 2026-09-30 using the rebased build (it needs a
+token budget of a few hundred because it reasons before answering). No benchmark was run on these three.
+
 Decode speed, F16, M4 16 GB Metal: 36.5 tok/s at 1 loop, 9.5 tok/s at 4 loops.
 
 ## Additional information: links

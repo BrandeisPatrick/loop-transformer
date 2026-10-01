@@ -54,7 +54,7 @@ VERIFY_MODEL="models/$NAME-Q4_K_M.gguf"; [ -f "$VERIFY_MODEL" ] || VERIFY_MODEL=
 OK=0
 for attempt in 1 2 3; do
   scripts/memwait.sh || { echo "  attempt $attempt: waiting for memory"; sleep 30; continue; }
-  OUT=$($LC/build/bin/llama-cli -m "$VERIFY_MODEL" --single-turn --temp 0 -n 64 -c 512 --no-warmup \
+  OUT=$($LC/build/bin/llama-cli -m "$VERIFY_MODEL" --single-turn --temp 0 -n 600 -c 1024 --no-warmup \
         -p "What is 17 + 26? Answer briefly." 2>/dev/null | tail -6)
   BODY=$(echo "$OUT" | tr '\n' ' ' | sed 's/.*Answer briefly\.//;s/\[ Prompt.*//' | tr -d ' ')
   if echo "$OUT" | grep -q "43"; then echo "  answer contains 43 — verification passed"; OK=1; break; fi
