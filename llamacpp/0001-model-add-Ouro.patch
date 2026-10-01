@@ -1,8 +1,9 @@
-From 68e260b795bcec8ab3bbf86cbc7ee3d19c369fc2 Mon Sep 17 00:00:00 2001
+From 011c39c0858f7f7f0bc449df3d7725bc2882a358 Mon Sep 17 00:00:00 2001
 From: Bat <59629055+BrandeisPatrick@users.noreply.github.com>
 Date: Thu, 1 Oct 2026 14:46:29 -0400
 Subject: [PATCH] model : add support for Ouro (ByteDance looped LM)
 
+Assisted-by: Claude Fable 5.1
 ---
  conversion/__init__.py    |   1 +
  conversion/ouro.py        |  71 +++++++++++++
