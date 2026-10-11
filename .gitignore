@@ -6,3 +6,5 @@
 __pycache__/
 models/*.gguf
 third_party/
+data/
+results/parity_work/
