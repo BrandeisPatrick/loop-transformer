@@ -59,7 +59,7 @@ Keep the Requirements section; deleting it can get the PR rejected.
 9 files, 324 insertions, 0 deletions. No test files added (test-llama-archs enumerates all archs).
 
 ## Validation (all numbers measured in this repo; anchors were measured with the transformers
-## reference before the port existed)
+## reference before the port existed; parity, perplexity and 2.6B added 2026-10-11)
 
 Greedy generation on the smoke prompt is token-identical to the transformers reference.
 
@@ -91,6 +91,35 @@ token budget of a few hundred because it reasons before answering). No benchmark
 Smoke prompt ("What is 17 + 26?", greedy), all four variants answer 43: Ouro-1.4B (full eval above),
 Ouro-1.4B-Thinking and Ouro-2.6B (publish gate, 2026-09-07), Ouro-2.6B-Thinking Q4_K_M (re-checked
 2026-09-30 on the rebased build, 13.3 tok/s, minimum free memory 49%). Only 1.4B has benchmark numbers.
+
+Logit parity (scripts/logit_parity.py + scripts/logit_dump.cpp, 2026-10-11): 20 prompts (prose, code,
+math, JSON, SQL, HTML, five non-English languages), 829 token positions, identical token ids on both
+sides, F16 GGUF on Metal vs transformers fp32 on CPU:
+
+| loops | top-1 identical | max abs logit diff | mean abs logit diff |
+|---|---|---|---|
+| 1 | 829 / 829 | 0.21 | 0.0010 |
+| 2 | 829 / 829 | 0.11 | 0.0014 |
+| 4 | 829 / 829 | 0.34 | 0.0019 |
+
+Against a bf16 reference instead (results/logit_parity.json) the agreement is 815 to 822 of 829, and
+every mismatch is a position where the reference's top two candidates are within 0.1 of each other,
+i.e. bf16 rounding on the reference side. The fp32 numbers are the ones to quote.
+
+Perplexity, wikitext-2 test, 100 chunks of 512 tokens, Metal (2026-10-11):
+
+| file | loops | PPL |
+|---|---|---|
+| F16 | 4 | 9.53 +/- 0.15 |
+| Q8_0 | 4 | 9.54 +/- 0.15 |
+| Q4_K_M | 4 | 9.84 +/- 0.16 |
+| F16 | 2 | 16.43 +/- 0.29 |
+| F16 | 1 | 104.4 +/- 2.0 |
+
+Ouro-2.6B (48 physical layers, 192 logical), Q8_0 with q8_0 KV cache, GSM8K 3-shot on the same
+200-problem subset (2026-10-11): 90.0 +/- 2.1 under this repo's rule; 89.0 under lm-eval flexible;
+70.0 under lm-eval's verbatim strict regex, which drops the 22.5% of answers written with a `$` sign.
+Paper: 81.58 (lm-eval strict, full test set). No transformers anchor exists for 2.6B on this machine.
 
 Decode speed, F16, M4 16 GB Metal: 36.5 tok/s at 1 loop, 9.5 tok/s at 4 loops.
 

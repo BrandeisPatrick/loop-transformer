@@ -1,68 +1,13 @@
 [
   {
-    "file": "gsm8k_ouro-1.4b_3shot_T1.jsonl",
-    "model": "ouro-1.4b",
-    "loops": 1,
-    "n": 100,
-    "strict": 0.2,
-    "strict_fixed": 0.23,
-    "flexible": 0.23,
-    "dollar_rate": 0.1,
-    "as_run": 0.23
-  },
-  {
-    "file": "gsm8k_ouro-1.4b_3shot_T2.jsonl",
-    "model": "ouro-1.4b",
-    "loops": 2,
-    "n": 100,
-    "strict": 0.52,
-    "strict_fixed": 0.64,
-    "flexible": 0.67,
-    "dollar_rate": 0.16,
-    "as_run": 0.64
-  },
-  {
-    "file": "gsm8k_ouro-1.4b_3shot_T3.jsonl",
-    "model": "ouro-1.4b",
-    "loops": 3,
-    "n": 100,
-    "strict": 0.59,
-    "strict_fixed": 0.72,
-    "flexible": 0.72,
-    "dollar_rate": 0.17,
-    "as_run": 0.72
-  },
-  {
-    "file": "gsm8k_ouro-1.4b_3shot_T4.jsonl",
-    "model": "ouro-1.4b",
-    "loops": 4,
-    "n": 200,
-    "strict": 0.605,
-    "strict_fixed": 0.79,
-    "flexible": 0.8,
-    "dollar_rate": 0.23,
-    "as_run": 0.8
-  },
-  {
-    "file": "gsm8k_qwen3-1.7b-base_3shot.jsonl",
-    "model": "hf.co/mradermacher/Qwen3-1.7B-Base-GGUF:Q8_0",
+    "file": "gsm8k_ouro-2.6b_llamacpp_Q8_L4.jsonl",
+    "model": "ouro-2.6b-q8-L4",
     "loops": null,
     "n": 200,
-    "strict": 0.59,
-    "strict_fixed": 0.655,
-    "flexible": 0.715,
-    "dollar_rate": 0.095,
-    "as_run": 0.68
-  },
-  {
-    "file": "gsm8k_qwen3-4b-base_3shot.jsonl",
-    "model": "hf.co/mradermacher/Qwen3-4B-Base-GGUF:Q4_K_M",
-    "loops": null,
-    "n": 200,
-    "strict": 0.67,
-    "strict_fixed": 0.74,
-    "flexible": 0.81,
-    "dollar_rate": 0.11,
-    "as_run": 0.765
+    "strict": 0.7,
+    "strict_fixed": 0.89,
+    "flexible": 0.89,
+    "dollar_rate": 0.225,
+    "as_run": 0.9
   }
 ]

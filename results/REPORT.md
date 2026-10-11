@@ -17,6 +17,7 @@ Local numbers are on a fixed 200-problem subset (seed 0) unless n says otherwise
 | gsm8k_ouro-1.4b_llamacpp_Q4KM_L1 | ouro-q4-L1 |  | 100 | **20.0** ± 4.0 | — | 10 | 0 | 0.9 | 77 | done |
 | gsm8k_ouro-1.4b_llamacpp_Q4KM_L4 | ouro-1.4b-q4 |  | 100 | **75.0** ± 4.3 | — | 0 | 0 | 4.5 | 102 | done |
 | gsm8k_ouro-1.4b_llamacpp_Q8_L4 | ouro-q8 |  | 99 | **79.8** ± 4.0 | — | 0 | 0 | 7.3 | 102 | running |
+| gsm8k_ouro-2.6b_llamacpp_Q8_L4 | ouro-2.6b-q8-L4 |  | 200 | **90.0** ± 2.1 | — | 1 | 0 | 29.1 | 107 | done |
 | gsm8k_qwen3-1.7b-base_3shot | hf.co/mradermacher/Qwen3-1.7B-Base-GGUF: |  | 200 | **68.0** ± 3.3 | 70.3 | 17 | 0 | 2.9 | 133 | done |
 | gsm8k_qwen3-1.7b_nothink | qwen3:1.7b |  | 200 | **82.5** ± 2.7 | — | 1 | 0 | 4.2 | 292 | done |
 | gsm8k_qwen3-4b-base_3shot | hf.co/mradermacher/Qwen3-4B-Base-GGUF:Q4 |  | 200 | **76.5** ± 3.0 | 72.9 | 10 | 0 | 4.0 | 135 | done |
@@ -28,12 +29,7 @@ See NOTES.md §8: lm-eval's verbatim strict-match cannot capture a `$`-prefixed 
 
 | run | as-run | lm-eval strict | strict with `$` | lm-eval flexible | `$`-formatted |
 |---|---|---|---|---|---|
-| gsm8k_ouro-1.4b_3shot_T1 | 23.0 | 20.0 | 23.0 | 23.0 | 10.0% |
-| gsm8k_ouro-1.4b_3shot_T2 | 64.0 | 52.0 | 64.0 | 67.0 | 16.0% |
-| gsm8k_ouro-1.4b_3shot_T3 | 72.0 | 59.0 | 72.0 | 72.0 | 17.0% |
-| gsm8k_ouro-1.4b_3shot_T4 | 80.0 | 60.5 | 79.0 | 80.0 | 23.0% |
-| gsm8k_qwen3-1.7b-base_3shot | 68.0 | 59.0 | 65.5 | 71.5 | 9.5% |
-| gsm8k_qwen3-4b-base_3shot | 76.5 | 67.0 | 74.0 | 81.0 | 11.0% |
+| gsm8k_ouro-2.6b_llamacpp_Q8_L4 | 90.0 | 70.0 | 89.0 | 89.0 | 22.5% |
 
 ## Ouro-1.4B: accuracy vs recurrent steps (GSM8K 3-shot strict)
 

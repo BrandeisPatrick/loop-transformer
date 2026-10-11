@@ -38,11 +38,11 @@ PROMPTS = [
 ]
 
 
-def reference_logits(model_id, loops_list, token_lists, device):
+def reference_logits(model_id, loops_list, token_lists, device, dtype="bfloat16"):
     import torch
     from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True,
-                                                 torch_dtype=torch.bfloat16, device_map=device)
+                                                 torch_dtype=getattr(torch, dtype), device_map=device)
     model.eval()
     out = {}
     for L in loops_list:
@@ -56,7 +56,7 @@ def reference_logits(model_id, loops_list, token_lists, device):
             for ids in token_lists:
                 x = torch.tensor([ids], device=device)
                 logits = model(input_ids=x).logits[0].float().cpu().numpy()
-                res.append(logits.astype(np.float16))   # bf16 values are exactly representable in fp16
+                res.append(logits.astype(np.float16 if dtype == "bfloat16" else np.float32))
         out[L] = res
         print(f"  reference loops={L}: {len(res)} prompts in {time.time()-t0:.0f}s", flush=True)
     del model
@@ -118,6 +118,8 @@ def main():
     ap.add_argument("--dump-bin", default="third_party/llama.cpp/build-clt/bin/logit_dump")
     ap.add_argument("--loops", type=int, nargs="+", default=[1, 2, 4])
     ap.add_argument("--device", default="mps")
+    ap.add_argument("--ref-dtype", default="bfloat16", choices=["bfloat16", "float32"],
+                    help="float32 on cpu removes bf16 rounding from the reference (slower, 5.6 GB)")
     ap.add_argument("--work", default="results/parity_work")
     ap.add_argument("--out", default="results/logit_parity.json")
     args = ap.parse_args()
@@ -128,12 +130,12 @@ def main():
     n_pos = sum(len(t) for t in token_lists)
     print(f"{len(PROMPTS)} prompts, {n_pos} positions, bos={tok.bos_token_id}", flush=True)
 
-    print("reference (transformers, bf16):", flush=True)
-    ref = reference_logits(args.model_id, args.loops, token_lists, args.device)
+    print(f"reference (transformers, {args.ref_dtype} on {args.device}):", flush=True)
+    ref = reference_logits(args.model_id, args.loops, token_lists, args.device, args.ref_dtype)
 
     print("llama.cpp (GGUF):", flush=True)
     report = {"model_id": args.model_id, "gguf": os.path.basename(args.gguf), "prompts": len(PROMPTS),
-              "positions": n_pos, "reference_dtype": "bfloat16", "device": args.device, "loops": {}}
+              "positions": n_pos, "reference_dtype": args.ref_dtype, "device": args.device, "loops": {}}
     for L in args.loops:
         cpp = llamacpp_logits(args.dump_bin, args.gguf, L, token_lists, args.work)
         report["loops"][str(L)] = compare(ref[L], cpp)

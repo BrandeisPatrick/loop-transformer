@@ -68,8 +68,11 @@ Validated against anchors measured with the transformers reference *before* the 
 | 2 | 67.0 | 64.0 | 100 |
 | 4 | **80.5** ± 2.8 | **80.0** ± 2.8 | 200 |
 
-Every depth within one standard error; greedy output token-identical on the smoke prompt; Q8_0 79.8 and
-Q4_K_M 75.0 at 4 loops; `test-llama-archs` passes on Metal, Accelerate and CPU. Converted GGUFs for all
+Every depth within one standard error. Logit parity against the fp32 reference on identical token ids:
+top-1 identical at **829 / 829** positions across 20 prompts at 1, 2 and 4 loops, max logit gap 0.34, mean
+0.002 (`scripts/logit_parity.py`). wikitext-2 perplexity at 4 loops: F16 9.53, Q8_0 9.54, Q4_K_M 9.84;
+at 2 and 1 loops 16.4 and 104 (the depth curve again). Ouro-2.6B through the same port scores 90.0 on the
+same GSM8K subset (Q8_0). `test-llama-archs` passes on Metal, Accelerate and CPU. Converted GGUFs for all
 four Ouro checkpoints are published (links above). Until the PR merges they need the patched build from
 [llamacpp/build.sh](llamacpp/build.sh); after Ollama bumps its llama.cpp pin,
 `ollama run hf.co/BrandeisPatrick/Ouro-1.4B-GGUF` works unmodified. Port write-up: NOTES.md §15.
