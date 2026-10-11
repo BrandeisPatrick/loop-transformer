@@ -60,7 +60,7 @@ port existed, so the port is checked against a number, not against an impression
 
 - `ouro.cpp` → `src/models/ouro.cpp`, the graph
 - `ouro.py` → `conversion/ouro.py`, the HF→GGUF conversion
-- `0001-model-add-Ouro.patch` — the whole change, including registration, against upstream `f1cee99`
+- `0001-model-add-Ouro.patch` — the whole change, including registration, against upstream `23b0202`
 - `build.sh`, `convert.sh`
 
 ## Upstreaming
