@@ -1,0 +1,26 @@
+### build e79d8ca | free before 80%
+downloaded 2.6G
+### A. llama-cli greedy smoke
+min free 30%
+arch = ouro
+n_layer = 192
+model params = 2.67 B
+arch = ouro
+n_layer = 192
+model params = 2.67 B
+> What is 17 + 26? Answer briefly.
+43
+
+[ Prompt: 60.2 t/s | Generation: 7.5 t/s ]
+
+
+Exiting...
+
+A RESULT: contains 43
+### B. llama-server with the tester's flags (adapted)
+min free 63%
+
+---content---
+43
+B RESULT: contains 43 | finish: stop
+### DONE, file removed, free 68%
